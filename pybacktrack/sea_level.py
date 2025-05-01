@@ -67,7 +67,10 @@ class SeaLevel(object):
         ----------
         sea_level_model_name : string
             Name of a bundled sea level model.
-            Bundled sea level models include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+            Bundled sea level models include
+            ``Miller2024_SealevelCurve``,
+            ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``,
+            ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
         
         Returns
         -------

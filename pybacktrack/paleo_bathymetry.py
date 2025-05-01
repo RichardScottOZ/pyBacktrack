@@ -186,7 +186,10 @@ def reconstruct_backtrack_bathymetry(
     sea_level_model : string, optional
         Used to obtain sea levels relative to present day.
         Can be either the name of a bundled sea level model, or a sea level filename.
-        Bundled sea level models include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+        Bundled sea level models include
+        ``Miller2024_SealevelCurve``,
+        ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``,
+        ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
     lithology_name : string, optional
         Lithology name of the all sediment (must be present in lithologies file).
         The total sediment thickness at all sediment locations consists of a single lithology.
@@ -1368,7 +1371,10 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
     sea_level_model : string, optional
         Used to obtain sea levels relative to present day.
         Can be either the name of a bundled sea level model, or a sea level filename.
-        Bundled sea level models include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+        Bundled sea level models include
+        ``Miller2024_SealevelCurve``,
+        ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``,
+        ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
     lithology_name : string, optional
         Lithology name of the all sediment (must be present in lithologies file).
         The total sediment thickness at all sediment locations consists of a single lithology.

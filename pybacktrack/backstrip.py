@@ -82,7 +82,10 @@ def backstrip_well(
     sea_level_model : string, optional
         Used to obtain sea levels relative to present day.
         Can be either the name of a bundled sea level model, or a sea level filename.
-        Bundled sea level models include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+        Bundled sea level models include
+        ``Miller2024_SealevelCurve``,
+        ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``,
+        ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
     base_lithology_name : string, optional
         Lithology name of the stratigraphic unit at the base of the well (must be present in lithologies file).
         The stratigraphic units in the well might not record the full depth of sedimentation.
@@ -519,7 +522,10 @@ def backstrip_and_write_well(
     sea_level_model : string, optional
         Used to obtain sea levels relative to present day.
         Can be either the name of a bundled sea level model, or a sea level filename.
-        Bundled sea level models include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+        Bundled sea level models include
+        ``Miller2024_SealevelCurve``,
+        ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``,
+        ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
     base_lithology_name : string, optional
         Lithology name of the stratigraphic unit at the base of the well (must be present in lithologies file).
         The stratigraphic units in the well might not record the full depth of sedimentation.

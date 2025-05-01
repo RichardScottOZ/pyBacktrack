@@ -74,7 +74,7 @@ PyBacktrack depends on:
 
 - `NumPy <http://www.numpy.org/>`_
 - `SciPy <https://www.scipy.org/>`_
-- `Generic Mapping Tools (GMT) <http://gmt.soest.hawaii.edu/>`_ (>=5.0.0)
+- `Generic Mapping Tools (GMT) <https://www.generic-mapping-tools.org/>`_ (>=5.0.0)
 - `PyGPlates <http://www.gplates.org/>`_
 
 `NumPy` and `SciPy` are automatically installed by `pip` when :ref:`pybacktrack is installed <pybacktrack_pip_install_pybacktrack>`, however `GMT` (version 5 or above) and `pyGPlates` need to be manually installed.

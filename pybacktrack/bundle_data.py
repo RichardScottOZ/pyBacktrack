@@ -98,7 +98,7 @@ The following module attributes are available:
 
   A list of bundled sea level model *names* (keys in `BUNDLE_SEA_LEVEL_MODELS`).
   
-  Choices include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+  Choices include ``Miller2024_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``, ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
 
 - **pybacktrack.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES**
 
@@ -281,14 +281,17 @@ BUNDLE_DYNAMIC_TOPOGRAPHY_MODELS = {
     ),
 }
 
-BUNDLE_DYNAMIC_TOPOGRAPHY_MODEL_NAMES = BUNDLE_DYNAMIC_TOPOGRAPHY_MODELS.keys()
+BUNDLE_DYNAMIC_TOPOGRAPHY_MODEL_NAMES = list(BUNDLE_DYNAMIC_TOPOGRAPHY_MODELS.keys())
 BUNDLE_DYNAMIC_TOPOGRAPHY_MODELS_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_backtrack.html#pybacktrack-bundled-dynamic-topography-models'
 
 BUNDLE_SEA_LEVEL_PATH = os.path.join(BUNDLE_PATH, 'sea_level')
 BUNDLE_SEA_LEVEL_MODELS = {
+    'Miller2024_SealevelCurve': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Miller2024_SealevelCurve.dat'),
+    'Haq2024_Hybrid_SealevelCurve': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Haq2024_Hybrid_SealevelCurve.dat'),
+    'Haq2024_Hybrid_SealevelCurve_Longterm': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Haq2024_Hybrid_SealevelCurve_Longterm.dat'),
     'Haq87_SealevelCurve': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Haq87_SealevelCurve.dat'),
-    'Haq87_SealevelCurve_Longterm': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Haq87_SealevelCurve_Longterm.dat')
+    'Haq87_SealevelCurve_Longterm': os.path.join(BUNDLE_SEA_LEVEL_PATH, 'Haq87_SealevelCurve_Longterm.dat'),
 }
 
-BUNDLE_SEA_LEVEL_MODEL_NAMES = BUNDLE_SEA_LEVEL_MODELS.keys()
+BUNDLE_SEA_LEVEL_MODEL_NAMES = list(BUNDLE_SEA_LEVEL_MODELS.keys())
 BUNDLE_SEA_LEVEL_MODELS_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_backtrack.html#pybacktrack-bundled-sea-level-models'

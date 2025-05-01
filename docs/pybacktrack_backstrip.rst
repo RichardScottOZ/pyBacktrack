@@ -167,11 +167,26 @@ Sea level variation
 A model of the variation of sea level relative to present day can optionally be used when backstripping.
 This adjusts the isostatic correction of the decompacted sediment thickness to take into account sea-level variations.
 
-There are two built-in sea level models :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backstrip``:
+These are the built-in sea level models :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backstrip``:
+
+* ``Miller2024_SealevelCurve`` - `Global Mean and Relative Sea-Level Changes Over the Past 66 Myr: Implications for Early Eocene Ice Sheets <https://doi.org/10.3389/esss.2023.10091>`_
+
+* ``Haq2024_Hybrid_SealevelCurve`` - Combined `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_ and `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
+  sea level curves for the Cretaceous and Jurassic respectively, with the Cenozoic section of `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_.
+
+  - 0-66 Ma: `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_
+  - 66-140 Ma: `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_
+  - 140.1-205 Ma: `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
+
+* ``Haq2024_Hybrid_SealevelCurve_Longterm`` - Long-term curve.
+
+  Note that while this is from `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_, it is digitized to follow the peaks of the shorter term curve.
 
 * ``Haq87_SealevelCurve`` - `The Phanerozoic Record of Global Sea-Level Change <https://doi.org/10.1126/science.1116412>`_
 
-* ``Haq87_SealevelCurve_Longterm`` - Normalised to start at zero at present-day.
+* ``Haq87_SealevelCurve_Longterm`` - Long-term curve.
+
+  Normalised to start at zero at present-day.
 
 A sea-level model is optional. If one is not specified then sea-level variation is assumed to be zero.
 

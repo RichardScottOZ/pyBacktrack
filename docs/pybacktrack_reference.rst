@@ -439,7 +439,7 @@ The following attributes are available to access the bundled data:
 ``pybacktrack.BUNDLE_SEA_LEVEL_MODEL_NAMES``
   A list of bundled sea level model *names* (keys in `BUNDLE_SEA_LEVEL_MODELS`).
   
-  Choices include ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
+  Choices include ``Miller2024_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``, ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
 
 ``pybacktrack.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES``
   Rotation files of the reconstruction model used to reconstruct sediment-deposited crust for paleobathymetry gridding.
