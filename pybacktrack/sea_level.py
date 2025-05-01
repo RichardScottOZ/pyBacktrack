@@ -32,6 +32,7 @@ from __future__ import print_function
 import pybacktrack.bundle_data
 import pybacktrack.util.interpolate
 import math
+import os.path
 import scipy.integrate
 import warnings
 
@@ -118,6 +119,15 @@ class SeaLevel(object):
         if sea_level_model_or_bundled_model_name in pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODEL_NAMES:
             return SeaLevel.create_from_bundled_model(sea_level_model_or_bundled_model_name)
         else:
+            # Otherwise we're expecting a user-provided sea level model (which should be a text file).
+            def is_sea_level_model(sea_level_model):
+                return os.path.isfile(sea_level_model)
+            
+            if not is_sea_level_model(sea_level_model_or_bundled_model_name):
+                raise ValueError("'sea_level_model_or_bundled_model_name' should be one of {0}, "
+                                 "or a user-provided model (as a text filename containing a sea level curve).".format(
+                    ', '.join(pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODEL_NAMES)))
+
             # Create from specified sea level curve file.
             return SeaLevel(sea_level_model_or_bundled_model_name)
 

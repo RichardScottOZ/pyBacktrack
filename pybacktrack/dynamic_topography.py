@@ -333,7 +333,18 @@ class DynamicTopography(object):
         if isinstance(dynamic_topography_model_or_bundled_model_name, str if sys.version_info[0] >= 3 else basestring):  # Python 2 vs 3.
             return DynamicTopography.create_from_bundled_model(dynamic_topography_model_or_bundled_model_name, longitude, latitude, age)
         else:
-            # Otherwise we're expecting a 3-tuple.
+            # Otherwise we're expecting a user-provided dynamic topography model.
+            def is_dynamic_topography_model(dynamic_topography_model):
+                try:
+                    return len(dynamic_topography_model) == 3
+                except TypeError:
+                    return False
+            
+            if not is_dynamic_topography_model(dynamic_topography_model_or_bundled_model_name):
+                raise ValueError("'dynamic_topography_model_or_bundled_model_name' should be one of {0}, "
+                                 "or a user-provided model as a 3-tuple (filename of the grid list file, filename of the static polygons file, list of rotation filenames).".format(
+                    ', '.join(pybacktrack.bundle_data.BUNDLE_DYNAMIC_TOPOGRAPHY_MODEL_NAMES)))
+
             dynamic_topography_list_filename, dynamic_topography_static_polygon_filename, dynamic_topography_rotation_filenames = dynamic_topography_model_or_bundled_model_name
             return DynamicTopography(dynamic_topography_list_filename, dynamic_topography_static_polygon_filename, dynamic_topography_rotation_filenames, longitude, latitude, age)
     
