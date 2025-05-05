@@ -16,10 +16,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from functools import partial
 import itertools
 import math
@@ -561,18 +557,6 @@ if __name__ == '__main__':
     
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-        
     def parse_positive_integer(value_string):
         try:
             value = int(value_string)
@@ -620,7 +604,7 @@ if __name__ == '__main__':
         
         # Allow user to override default total sediment thickness filename (if they don't want the one in the bundled data).
         parser.add_argument(
-            '-s', '--total_sediment_thickness_filename', type=argparse_unicode,
+            '-s', '--total_sediment_thickness_filename', type=str,
             default=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
             metavar='total_sediment_thickness_filename',
             help='R|Optional filename used to determine submerged crust.\n'
@@ -632,7 +616,7 @@ if __name__ == '__main__':
         
         # Allow user to override default age grid filename (if they don't want the one in the bundled data).
         parser.add_argument(
-            '-a', '--age_grid_filename', type=argparse_unicode,
+            '-a', '--age_grid_filename', type=str,
             default=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
             metavar='age_grid_filename',
             help='R|Optional age grid filename used to distinguish between continental and oceanic crust.\n'
@@ -678,12 +662,12 @@ if __name__ == '__main__':
                 'Defaults to using a single CPU.')
         
         parser.add_argument(
-            'rift_start_time_grid_filename', type=argparse_unicode,
+            'rift_start_time_grid_filename', type=str,
             metavar='rift_start_time_grid_filename',
             help='The output grid filename containing rift start times.')
         
         parser.add_argument(
-            'rift_end_time_grid_filename', type=argparse_unicode,
+            'rift_end_time_grid_filename', type=str,
             metavar='rift_end_time_grid_filename',
             help='The output grid filename containing rift end times.')
         

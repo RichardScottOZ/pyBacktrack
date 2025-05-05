@@ -24,10 +24,6 @@
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import pybacktrack.bundle_data
 from pybacktrack.lithology import read_lithologies_file, read_lithologies_files, DEFAULT_BASE_LITHOLOGY_NAME
 from pybacktrack.sea_level import SeaLevel
@@ -135,7 +131,7 @@ def backstrip_well(
     # Read the lithologies from one or more text files.
     #
     # It used to be a single filename (instead of a list) so handle that case to be backward compatible.
-    if isinstance(lithology_filenames, str if sys.version_info[0] >= 3 else basestring):  # Python 2 vs 3.
+    if isinstance(lithology_filenames, str):
         lithology_filename = lithology_filenames
         lithologies = read_lithologies_file(lithology_filename)
     else:

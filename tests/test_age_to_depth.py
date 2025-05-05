@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import pytest
 import pybacktrack
 from pybacktrack.util.call_system_command import call_system_command

@@ -26,10 +26,6 @@
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import math
 import pybacktrack.age_to_depth as age_to_depth
 import pybacktrack.bundle_data
@@ -199,7 +195,7 @@ def backtrack_well(
     # Read the lithologies from one or more text files.
     #
     # It used to be a single filename (instead of a list) so handle that case to be backward compatible.
-    if isinstance(lithology_filenames, str if sys.version_info[0] >= 3 else basestring):  # Python 2 vs 3.
+    if isinstance(lithology_filenames, str):
         lithology_filename = lithology_filenames
         lithologies = read_lithologies_file(lithology_filename)
     else:
@@ -1163,18 +1159,6 @@ def main():
     from pybacktrack.dynamic_topography import ArgParseDynamicTopographyAction
     from pybacktrack.lithology import ArgParseLithologyAction, DEFAULT_BUNDLED_LITHOLOGY_SHORT_NAME, BUNDLED_LITHOLOGY_SHORT_NAMES
 
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-
     def argparse_non_negative_integer(value_string):
         try:
             value = int(value_string)
@@ -1239,7 +1223,7 @@ def main():
     parser.add_argument('--version', action='version', version=pybacktrack.version.__version__)
     
     parser.add_argument(
-        '-w', '--well_filename', type=argparse_unicode, required=True,
+        '-w', '--well_filename', type=str, required=True,
         metavar='well_filename',
         help='The well filename containing age, present day thickness, paleo water depth and lithology(s) '
              'for each stratigraphic unit in a single well.')
@@ -1331,7 +1315,7 @@ def main():
              .format(pybacktrack.bundle_data.BUNDLE_RIFTING_GRIDS_DOC_URL))
     
     parser.add_argument(
-        '-o', '--output_well_filename', type=argparse_unicode,
+        '-o', '--output_well_filename', type=str,
         metavar='output_well_filename',
         help='Optional output well filename to write amended well data to. '
              'This is useful to see the extra stratigraphic base unit added from bottom of well to basement.')
@@ -1342,7 +1326,7 @@ def main():
     # Cannot specify both options though.
     age_grid_argument_group = parser.add_mutually_exclusive_group()
     age_grid_argument_group.add_argument(
-        '-a', '--age_grid_filename', type=argparse_unicode,
+        '-a', '--age_grid_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         metavar='age_grid_filename',
         help='R|Optional age grid filename used to obtain age of seafloor at well location.\n'
@@ -1358,7 +1342,7 @@ def main():
     # Cannot specify both options though.
     total_sediment_thickness_argument_group = parser.add_mutually_exclusive_group()
     total_sediment_thickness_argument_group.add_argument(
-        '-s', '--total_sediment_thickness_filename', type=argparse_unicode,
+        '-s', '--total_sediment_thickness_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         metavar='total_sediment_thickness_filename',
         help='R|Optional filename used to obtain total sediment thickness at well location.\n'
@@ -1374,7 +1358,7 @@ def main():
     
     # Allow user to override default crustal thickness filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-k', '--crustal_thickness_filename', type=argparse_unicode,
+        '-k', '--crustal_thickness_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_CRUSTAL_THICKNESS_FILENAME,
         metavar='crustal_thickness_filename',
         help='R|Optional filename used to obtain crustal thickness at well location.\n'
@@ -1386,7 +1370,7 @@ def main():
     
     # Allow user to override default topography filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-t', '--topography_filename', type=argparse_unicode,
+        '-t', '--topography_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
         metavar='topography_filename',
         help='R|Optional topography filename used to obtain water depth at well location.\n'
@@ -1435,14 +1419,14 @@ def main():
                     ', '.join(pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODEL_NAMES),
                     pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODELS_DOC_URL))
     sea_level_argument_group.add_argument(
-        '-sl', '--sea_level_model', type=argparse_unicode,
+        '-sl', '--sea_level_model', type=str,
         metavar='sea_level_model',
         help='Optional file used to obtain sea level (relative to present-day) over time. '
              'If no filename (or model) is specified then sea level is ignored. '
              'If specified then each row should contain an age column followed by a column for sea level (in metres).')
     
     parser.add_argument(
-        'output_filename', type=argparse_unicode,
+        'output_filename', type=str,
         metavar='output_filename',
         help='The output filename used to store the decompacted total sediment thickness and '
              'water depth through time.')

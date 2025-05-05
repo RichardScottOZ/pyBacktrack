@@ -16,10 +16,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import math
 import os.path
 import pybacktrack
@@ -169,18 +165,6 @@ if __name__ == '__main__':
     
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     
     def main():
         
@@ -206,12 +190,12 @@ if __name__ == '__main__':
                 help='The grid spacing (in minutes) of generate points in lon/lat space.')
         
         parser.add_argument(
-            'total_sediment_thickness_filename', type=argparse_unicode,
+            'total_sediment_thickness_filename', type=str,
             metavar='total_sediment_thickness_filename',
             help='The total sediment thickness grid.')
         
         parser.add_argument(
-            'water_thickness_grid_filename', type=argparse_unicode,
+            'water_thickness_grid_filename', type=str,
             metavar='water_thickness_grid_filename',
             help='The water thickness grid.')
         

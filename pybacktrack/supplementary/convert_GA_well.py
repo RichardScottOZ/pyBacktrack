@@ -16,10 +16,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import re
 import sys
 
@@ -129,18 +125,6 @@ if __name__ == '__main__':
     
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     
     def main():
         
@@ -162,7 +146,7 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description=__description__, formatter_class=argparse.RawDescriptionHelpFormatter)
         
         parser.add_argument(
-            'GA_well_filenames', type=argparse_unicode, nargs='+',
+            'GA_well_filenames', type=str, nargs='+',
             help='Filenames of one or more GA wells to convert.')
         
         # Parse command-line options.

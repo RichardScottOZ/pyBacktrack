@@ -85,7 +85,7 @@ Also ensure that version 5 or above (supports NetCDF version 4) is installed sin
 `PyGPlates` is not currently installable as a package and so needs to be in the python path (sys.path or PYTHONPATH).
 Installation instructions are available `here <http://www.gplates.org/docs/pygplates/index.html>`_.
 
-`PyGPlates` supports Python 3 (in addition to Python 2.7) so you can now use pyBacktrack with either.
+`PyGPlates` now supports Python 3 only (if you're still using Python 2.7 then you can try pyBacktrack version 1.4 or older).
 The :ref:`Macports install example <pybacktrack_install_requirements_mac>` below shows one approach to selecting the default Python using ``sudo port select``.
 Another approach is using Python virtual environments where each environment has its own ``python``, ``pip`` and installed packages.
 However, currently pyGPlates does not yet work in virtual environments (at least on Mac systems).
@@ -153,7 +153,7 @@ Set your default ``python`` to Python 3.8:
   sudo port select --set python python38
   sudo port select --set pip pip38
 
-.. note:: If you already have ``python`` referencing Python 2 then you can instead use ``python3`` to reference Python 3:
+.. note:: You can also use ``python3`` to reference Python 3:
           ::
           
             sudo port select --set python3 python38

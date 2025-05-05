@@ -22,10 +22,6 @@
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import codecs
 import math
@@ -330,7 +326,7 @@ class DynamicTopography(object):
         """
         
         # If a dynamic topography *bundled model name* was specified then create it from a bundled dynamic topography model.
-        if isinstance(dynamic_topography_model_or_bundled_model_name, str if sys.version_info[0] >= 3 else basestring):  # Python 2 vs 3.
+        if isinstance(dynamic_topography_model_or_bundled_model_name, str):
             return DynamicTopography.create_from_bundled_model(dynamic_topography_model_or_bundled_model_name, longitude, latitude, age)
         else:
             # Otherwise we're expecting a user-provided dynamic topography model.

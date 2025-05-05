@@ -16,10 +16,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os.path
 import pygplates
 import sys
@@ -143,18 +139,6 @@ if __name__ == '__main__':
     
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     
     def main():
         
@@ -205,12 +189,12 @@ if __name__ == '__main__':
                  'Defaults to {} kms.'.format(DEFAULT_EXCLUDE_OVERRIDING_DISTANCE_TO_TRENCHES_KMS))
         
         parser.add_argument(
-            'trench_filename', type=argparse_unicode,
+            'trench_filename', type=str,
             metavar='trench_filename',
             help='The output trench filename containing present-day trench locations.')
         
         parser.add_argument(
-            'subducting_boundary_filename', type=argparse_unicode,
+            'subducting_boundary_filename', type=str,
             metavar='subducting_boundary_filename',
             help='The output subducting boundary filename containing subducting plate boundaries of present-day trenchs.')
         

@@ -39,8 +39,13 @@ setup(
                  'Operating System :: POSIX :: Linux',
                  'Operating System :: MacOS :: MacOS X',
                  'Operating System :: Microsoft :: Windows',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3 :: Only',
+                 'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9',
+                 'Programming Language :: Python :: 3.10',
+                 'Programming Language :: Python :: 3.11',
+                 'Programming Language :: Python :: 3.12',
+                 'Programming Language :: Python :: 3.13',
                  'Topic :: Scientific/Engineering'],
     keywords='bathymetry backtrack backstrip rift subsidence tectonic',
     project_urls={
@@ -48,10 +53,10 @@ setup(
         'Source': 'https://github.com/EarthByte/pyBacktrack'
     },
     packages=['pybacktrack', 'pybacktrack.util'],
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy', 'scipy', 'setuptools'],
     setup_requires=[] + pytest_runner,
     tests_require=['pytest', 'pytest-pep8'],
-    python_requires='>=2.7',
+    python_requires='>=3.8',
     #
     # From the setuptools docs...
     #

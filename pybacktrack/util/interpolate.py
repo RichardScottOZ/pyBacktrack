@@ -26,7 +26,6 @@
 """
 
 
-from __future__ import print_function
 import pybacktrack.version
 import math
 import scipy.interpolate
@@ -269,18 +268,6 @@ def main():
 
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     #
     # Gather command-line options.
     #
@@ -317,12 +304,12 @@ def main():
              'Defaults to "clamp".')
     
     parser.add_argument(
-        'input_filename', type=argparse_unicode,
+        'input_filename', type=str,
         metavar='input_filename',
         help='The input filename containing the "x" positions to interpolate at.')
     
     parser.add_argument(
-        'output_filename', type=argparse_unicode,
+        'output_filename', type=str,
         metavar='output_filename',
         help='The output filename that the "x" positions (from input file) and interpolated "y" values (at those "x" positions) will be written to.')
     

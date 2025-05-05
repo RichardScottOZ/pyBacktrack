@@ -119,18 +119,6 @@ if __name__ == '__main__':
     
     import argparse
     
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     
     def main():
         
@@ -157,12 +145,12 @@ if __name__ == '__main__':
         
         # Rotation filenames.
         parser.add_argument('-r', '--rotation_filenames',
-            required=True, type=argparse_unicode, nargs='+', metavar='rotation_filename',
+            required=True, type=str, nargs='+', metavar='rotation_filename',
             help='One or more rotation files.')
         
         # Static polygon filenames.
         parser.add_argument('-p', '--static_polygon_filenames',
-            required=True, type=argparse_unicode, nargs='+', metavar='static_polygon_filename',
+            required=True, type=str, nargs='+', metavar='static_polygon_filename',
             help='One or more static polygon files.')
         
         # Time range and increment.
@@ -177,7 +165,7 @@ if __name__ == '__main__':
             help='The increment of the time range. Defaults to 1Myr.')
         
         parser.add_argument('drill_site_filenames',
-            type=argparse_unicode, nargs='+', metavar='drill_site_filename',
+            type=str, nargs='+', metavar='drill_site_filename',
             help='Drill site file.')
         
         parser.add_argument('-o', '--output_filename_suffix',

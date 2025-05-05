@@ -47,18 +47,6 @@ def main():
     from pybacktrack.dynamic_topography import ArgParseDynamicTopographyAction
     from pybacktrack.lithology import ArgParseLithologyAction, DEFAULT_BUNDLED_LITHOLOGY_SHORT_NAME, BUNDLED_LITHOLOGY_SHORT_NAMES
 
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-        
     def parse_positive_integer(value_string):
         try:
             value = int(value_string)
@@ -184,7 +172,7 @@ def main():
     
     # Allow user to override default age grid filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-a', '--age_grid_filename', type=argparse_unicode,
+        '-a', '--age_grid_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         metavar='age_grid_filename',
         help='R|Optional age grid filename used to obtain age of oceanic crust.\n'
@@ -194,7 +182,7 @@ def main():
     
     # Allow user to override default total sediment thickness filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-s', '--total_sediment_thickness_filename', type=argparse_unicode,
+        '-s', '--total_sediment_thickness_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         metavar='total_sediment_thickness_filename',
         help='R|Optional filename used to obtain total sediment thickness grid.\n'
@@ -206,7 +194,7 @@ def main():
     
     # Allow user to override default crustal thickness filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-k', '--crustal_thickness_filename', type=argparse_unicode,
+        '-k', '--crustal_thickness_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_CRUSTAL_THICKNESS_FILENAME,
         metavar='crustal_thickness_filename',
         help='R|Optional filename used to obtain crustal thickness grid.\n'
@@ -218,7 +206,7 @@ def main():
     
     # Allow user to override default topography filename (if they don't want the one in the bundled data).
     parser.add_argument(
-        '-t', '--topography_filename', type=argparse_unicode,
+        '-t', '--topography_filename', type=str,
         default=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
         metavar='topography_filename',
         help='R|Optional topography grid filename used to obtain water depth.\n'
@@ -292,7 +280,7 @@ def main():
                     ', '.join(pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODEL_NAMES),
                     pybacktrack.bundle_data.BUNDLE_SEA_LEVEL_MODELS_DOC_URL))
     sea_level_argument_group.add_argument(
-        '-sl', '--sea_level_model', type=argparse_unicode,
+        '-sl', '--sea_level_model', type=str,
         metavar='sea_level_model',
         help='Optional file used to obtain sea level (relative to present-day) over time. '
              'If no filename (or model) is specified then sea level is ignored. '
@@ -329,7 +317,7 @@ def main():
         help='Present-day location to reconstruct paleobathymetry. Specified as (longitude, latitude) in degrees.')
     
     parser.add_argument(
-        'output_filename', type=argparse_unicode,
+        'output_filename', type=str,
         metavar='output_filename',
         help='The name of file to contain the paleobathymetry (and reconstructed locations).')
     

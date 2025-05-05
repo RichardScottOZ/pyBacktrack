@@ -1,35 +1,7 @@
-from __future__ import print_function
 import glob
 import os
 import pybacktrack
 import warnings
-
-#
-# Python 2 and 3 compatibility.
-#
-# Iterating over a dict.
-try:
-    dict.iteritems
-except AttributeError:
-    # Python 3
-    def itervalues(d):
-        return iter(d.values())
-    def iteritems(d):
-        return iter(d.items())
-    def listvalues(d):
-        return list(d.values())
-    def listitems(d):
-        return list(d.items())
-else:
-    # Python 2
-    def itervalues(d):
-        return d.itervalues()
-    def iteritems(d):
-        return d.iteritems()
-    def listvalues(d):
-        return d.values()
-    def listitems(d):
-        return d.items()
 
 
 def adjust_well_name(
@@ -425,7 +397,7 @@ if __name__ == '__main__':
     
     # Read the well locations.
     well_locations = read_well_locations_file(well_locations_file)
-    #for well_name, well_location in iteritems(well_locations):
+    #for well_name, well_location in well_locations.items():
     #    print(well_name, well_location)
     
     # Read all the lithology files and merge their dicts.

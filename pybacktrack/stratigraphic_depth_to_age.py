@@ -25,10 +25,6 @@
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import math
 import pybacktrack.bundle_data
@@ -267,18 +263,6 @@ def main():
         python -m pybacktrack.stratigraphic_depth_to_age_cli -m age_depth_model.xy -- depth_points.xy age_depth_points.xy
         """
 
-    def argparse_unicode(value_string):
-        try:
-            if sys.version_info[0] >= 3:
-                filename = value_string
-            else:
-                # Filename uses the system encoding - decode from 'str' to 'unicode'.
-                filename = value_string.decode(sys.getfilesystemencoding())
-        except UnicodeDecodeError:
-            raise argparse.ArgumentTypeError("Unable to convert filename %s to unicode" % value_string)
-        
-        return filename
-    
     #
     # Gather command-line options.
     #
@@ -303,12 +287,12 @@ def main():
         help='Reverse the order of output columns to output as "depth age". Defaults to "age depth".')
     
     parser.add_argument(
-        'input_filename', type=argparse_unicode,
+        'input_filename', type=str,
         metavar='input_filename',
         help='The input filename containing the "depth" values.')
     
     parser.add_argument(
-        'output_filename', type=argparse_unicode,
+        'output_filename', type=str,
         metavar='output_filename',
         help='The output filename containing the converted "age" values (and associated depth values).')
     
