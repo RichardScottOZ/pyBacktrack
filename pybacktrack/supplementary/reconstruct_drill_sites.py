@@ -18,30 +18,30 @@ import sys
 # Need version 0.29 to use 'default_anchor_plate_id' argument for RotationModel.
 PYGPLATES_VERSION_REQUIRED = pygplates.Version(29)
 
-DEFAULT_OUTPUT_FILENAME_SUFFIX = "_reconstructed.txt"
-
 def reconstruct_drill_sites(
         drill_site_files,           # sequence of drill site filenames
         rotation_features_or_model, # any combination of rotation features and files; or a rotation model
         static_polygon_features,    # any combination of features, feature collection and files
+        output_filenames,
         end_time,
         start_time = 0,
         time_increment = 1,
-        anchor_plate_id=0,
-        output_filename_suffix = DEFAULT_OUTPUT_FILENAME_SUFFIX):
+        anchor_plate_id=0):
     """Reconstruct the present-day location of one or more drill sites.
     
     Read in one or more drill sites and reconstruct each drill site location
     (by assigning a plate ID using static polygons and reconstructing using rotation files)
     through a range of times (but not older than the age of the oldest stratigraphic layer at the drill site)
-    and output the reconstructed lon/lat locations to text files
-    (a separate file for each drill site, with same filename but different suffix).
+    and output the reconstructed lon/lat locations to text files (a separate file for each drill site).
     """
     
     # Check the imported pygplates version.
     if pygplates.Version.get_imported_version() < PYGPLATES_VERSION_REQUIRED:
         raise RuntimeError('Using pygplates version {0} but version {1} or greater is required'.format(
                 pygplates.Version.get_imported_version(), PYGPLATES_VERSION_REQUIRED))
+
+    if len(output_filenames) != len(drill_site_files):
+        raise ValueError('Number of output files must match number of input drill site files.')
 
     # Read all the bundled lithologies ("primary" and "extended").
     lithologies = pybacktrack.read_lithologies_files(pybacktrack.BUNDLE_LITHOLOGY_FILENAMES)
@@ -54,7 +54,7 @@ def reconstruct_drill_sites(
 
 
     # Iterate over the drill sites.
-    for drill_site_filename in drill_site_files:
+    for file_index, drill_site_filename in enumerate(drill_site_files):
         
         # Read drill site file to get the site location.
         drill_site = pybacktrack.read_well_file(
@@ -94,9 +94,8 @@ def reconstruct_drill_sites(
             raise ValueError('Unable to assign plate ID. Drill site does not intersect the static polygons.')
         drill_site_plate_id = partitioning_plate.get_feature().get_reconstruction_plate_id()
         
-        # Output filename is the input filename appended with a suffix.
-        drill_site_output_filename, _ = os.path.splitext(drill_site_filename)
-        drill_site_output_filename += output_filename_suffix
+        # Output filename.
+        drill_site_output_filename = output_filenames[file_index]
         
         # Open the output drill file for writing.
         with open(drill_site_output_filename, 'w', newline='') as drill_site_output_file:
@@ -128,6 +127,9 @@ if __name__ == '__main__':
     ########################
     
     import argparse
+
+    # Suffix to append to each input drill site filename if user does not specify output filenames.
+    DEFAULT_OUTPUT_FILENAME_SUFFIX = "_reconstructed"
     
     
     def main():
@@ -137,8 +139,8 @@ if __name__ == '__main__':
     Read in one or more drill sites and reconstruct each drill site location
     (by assigning a plate ID using static polygons and reconstructing using rotation files)
     through a range of times (but not older than the age of the oldest stratigraphic layer at the drill site)
-    and output the reconstructed lon/lat locations to text files
-    (a separate file for each drill site, with same filename but different suffix which is '{}' by default).
+    and output the reconstructed lon/lat locations to text files (a separate file for each drill site, either
+    specified on command-line or, if not specified, then matching drill site filename with '{}' suffix appended).
     
     NOTE: Separate the positional and optional arguments with '--' (workaround for bug in argparse module).
     For example...
@@ -189,27 +191,41 @@ if __name__ == '__main__':
                 dest='anchor_plate_id',
                 help='Anchor plate id used when reconstructing drill site locations. Defaults to zero.')
         
+        parser.add_argument('-o', '--output_filenames',
+            type=str, nargs='+', metavar='output_filename',
+            help='One or more output files containing the reconstructed drill site outputs. '
+                 'If not specified, then each output filename matches each input drill site filename with the "{}" suffix appended. '
+                 'If specified, then the number of output files must match the number of input drill site files '
+                 '(the order written to output files will match the order read from input files).'
+                 .format(DEFAULT_OUTPUT_FILENAME_SUFFIX))
+        
         parser.add_argument('drill_site_filenames',
             type=str, nargs='+', metavar='drill_site_filename',
-            help='Drill site file.')
-        
-        parser.add_argument('-o', '--output_filename_suffix',
-            type=str, default=DEFAULT_OUTPUT_FILENAME_SUFFIX, metavar='output_filename_suffix',
-            help='Filename suffix of reconstructed drill site output file. Defaults to "{}".'.format(DEFAULT_OUTPUT_FILENAME_SUFFIX))
+            help='One or more drill site files.')
         
         # Parse command-line options.
         args = parser.parse_args()
+
+        if not args.output_filenames:
+            output_filenames = []
+            for drill_site_filename in args.drill_site_filenames:
+                # Each output filename is the associated input drill site filename appended with the default suffix.
+                output_base_filename, output_ext = os.path.splitext(drill_site_filename)
+                output_filename = output_base_filename + DEFAULT_OUTPUT_FILENAME_SUFFIX + output_ext
+                output_filenames.append(output_filename)
+        else:
+            output_filenames = args.output_filenames
         
         # Reconstruct the present-day location of one or more drill sites.
         reconstruct_drill_sites(
             args.drill_site_filenames,
             args.rotation_filenames,
             args.static_polygon_filenames,
+            output_filenames,
             args.end_time,
             args.start_time,
             args.time_increment,
-            args.anchor_plate_id,
-            args.output_filename_suffix)
+            args.anchor_plate_id)
 
 
     import traceback
