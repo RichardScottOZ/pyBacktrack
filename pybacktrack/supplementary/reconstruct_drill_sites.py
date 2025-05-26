@@ -14,6 +14,10 @@ import sys
 #
 
 
+# Required pygplates version.
+# Need version 0.29 to use 'default_anchor_plate_id' argument for RotationModel.
+PYGPLATES_VERSION_REQUIRED = pygplates.Version(29)
+
 DEFAULT_OUTPUT_FILENAME_SUFFIX = "_reconstructed.txt"
 
 def reconstruct_drill_sites(
@@ -23,6 +27,7 @@ def reconstruct_drill_sites(
         end_time,
         start_time = 0,
         time_increment = 1,
+        anchor_plate_id=0,
         output_filename_suffix = DEFAULT_OUTPUT_FILENAME_SUFFIX):
     """Reconstruct the present-day location of one or more drill sites.
     
@@ -32,12 +37,17 @@ def reconstruct_drill_sites(
     and output the reconstructed lon/lat locations to text files
     (a separate file for each drill site, with same filename but different suffix).
     """
+    
+    # Check the imported pygplates version.
+    if pygplates.Version.get_imported_version() < PYGPLATES_VERSION_REQUIRED:
+        raise RuntimeError('Using pygplates version {0} but version {1} or greater is required'.format(
+                pygplates.Version.get_imported_version(), PYGPLATES_VERSION_REQUIRED))
 
     # Read all the bundled lithologies ("primary" and "extended").
     lithologies = pybacktrack.read_lithologies_files(pybacktrack.BUNDLE_LITHOLOGY_FILENAMES)
 
     # Rotation model.
-    rotation_model = pygplates.RotationModel(rotation_features_or_model)
+    rotation_model = pygplates.RotationModel(rotation_features_or_model, default_anchor_plate_id=anchor_plate_id)
 
     # Static polygons partitioner used to assign plate IDs to the drill sites.
     plate_partitioner = pygplates.PlatePartitioner(static_polygon_features, rotation_model)
@@ -135,6 +145,17 @@ if __name__ == '__main__':
 
     python reconstruct_drill_sites.py ... -- drill_site.txt
     """.format(DEFAULT_OUTPUT_FILENAME_SUFFIX)
+
+        def parse_positive_integer(value_string):
+            try:
+                value = int(value_string)
+            except ValueError:
+                raise argparse.ArgumentTypeError("%s is not an integer" % value_string)
+            
+            if value <= 0:
+                raise argparse.ArgumentTypeError("%g is not a positive integer" % value)
+            
+            return value
     
         #
         # Gather command-line options.
@@ -163,6 +184,10 @@ if __name__ == '__main__':
         parser.add_argument('-i', '--time_increment',
             type=float, default = 1,
             help='The increment of the time range. Defaults to 1Myr.')
+    
+        parser.add_argument('-a', '--anchor', type=parse_positive_integer, default=0,
+                dest='anchor_plate_id',
+                help='Anchor plate id used when reconstructing drill site locations. Defaults to zero.')
         
         parser.add_argument('drill_site_filenames',
             type=str, nargs='+', metavar='drill_site_filename',
@@ -183,6 +208,7 @@ if __name__ == '__main__':
             args.end_time,
             args.start_time,
             args.time_increment,
+            args.anchor_plate_id,
             args.output_filename_suffix)
 
 
