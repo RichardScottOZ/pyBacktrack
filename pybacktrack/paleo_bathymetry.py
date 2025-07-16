@@ -101,7 +101,8 @@ def reconstruct_backtrack_bathymetry(
         region_plate_ids=None,
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
-        use_all_cpus=False):
+        use_all_cpus=False,
+        rifting_period=None):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
     """reconstruct_paleo_bathymetry(\
@@ -123,7 +124,8 @@ def reconstruct_backtrack_bathymetry(
         region_plate_ids=None,\
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
-        use_all_cpus=False)
+        use_all_cpus=False,\
+        rifting_period=None)
     Reconstructs and backtracks sediment-covered crust through time to get paleo bathymetry.
     
     Parameters
@@ -211,6 +213,12 @@ def reconstruct_backtrack_bathymetry(
         If ``True`` then distribute CPU processing across all CPUs (cores).
         If a positive integer then use that many CPUs (cores).
         Defaults to ``False`` (single CPU).
+    rifting_period : tuple, optional
+        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
+        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     
     Returns
     -------
@@ -392,26 +400,40 @@ def reconstruct_backtrack_bathymetry(
     #
     # Note: For some reason we get a GMT error if we combine these grids in a single 'grdtrack' call, so we separate them instead.
     continental_grid_samples = _read_grid(continental_grid_samples, crustal_thickness_filename, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
-    continental_grid_samples = _read_grid(continental_grid_samples, pybacktrack.bundle_data.BUNDLE_RIFTING_START_FILENAME, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
-    continental_grid_samples = _read_grid(continental_grid_samples, pybacktrack.bundle_data.BUNDLE_RIFTING_END_FILENAME, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
 
-    # Ignore continental samples with no rifting (no rift start/end times) since there is no sediment deposition without rifting and
-    # also no tectonic subsidence.
+    # Add builtin rift start/end times to continental grid samples.
     #
-    # Note: The 8th and 9th values (indices 7 and 8) of each sample are the rift start and end ages.
-    #       A value of NaN means there is no rifting at the sample location.
-    continental_grid_samples = [grid_sample for grid_sample in continental_grid_samples
-                                    if not (math.isnan(grid_sample[7]) or math.isnan(grid_sample[8]))]
-    # Ensure rift start ages are not younger than associated rift end ages (due to filtering during grid sampling).
-    for grid_sample_index in range(len(continental_grid_samples)):
-        grid_sample = continental_grid_samples[grid_sample_index]
-        rift_start_age, rift_end_age = grid_sample[7], grid_sample[8]
-        if rift_start_age < rift_end_age:
-            # Clamp rift start age to the rift end age.
+    # Note: If a rifting period was specified then use that for all continental grid samples (instead of sampling builtin rift start/end grids).
+    if rifting_period is None:
+        continental_grid_samples = _read_grid(continental_grid_samples, pybacktrack.bundle_data.BUNDLE_RIFTING_START_FILENAME, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
+        continental_grid_samples = _read_grid(continental_grid_samples, pybacktrack.bundle_data.BUNDLE_RIFTING_END_FILENAME, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
+        # Ignore continental samples with no rifting (no rift start/end times) since there is no sediment deposition without rifting and also no tectonic subsidence.
+        #
+        # Note: The 8th and 9th values (indices 7 and 8) of each sample are the rift start and end ages.
+        #       A value of NaN means there is no rifting at the sample location.
+        continental_grid_samples = [grid_sample for grid_sample in continental_grid_samples
+                                        if not (math.isnan(grid_sample[7]) or math.isnan(grid_sample[8]))]
+        # Ensure rift start ages are not younger than associated rift end ages (due to filtering during grid sampling).
+        for grid_sample_index in range(len(continental_grid_samples)):
+            grid_sample = continental_grid_samples[grid_sample_index]
+            rift_start_age, rift_end_age = grid_sample[7], grid_sample[8]
+            if rift_start_age < rift_end_age:
+                # Clamp rift start age to the rift end age.
+                rift_start_age = rift_end_age
+                # Create a new tuple with the rift start age replaced.
+                grid_sample = grid_sample[:7] + (rift_start_age,) + grid_sample[8:]
+                continental_grid_samples[grid_sample_index] = grid_sample
+    else:
+        # The rift end time must be provided but the rift start time is optional (defaults to rift end time).
+        rift_start_age, rift_end_age = rifting_period
+        if rift_end_age is None:
+            raise ValueError('If rifting period is specified then rifting end time must not be None')
+        if rift_start_age is None:
             rift_start_age = rift_end_age
-            # Create a new tuple with the rift start age replaced.
-            grid_sample = grid_sample[:7] + (rift_start_age,) + grid_sample[8:]
-            continental_grid_samples[grid_sample_index] = grid_sample
+        elif rift_start_age < rift_end_age:
+            raise ValueError('Rifting period must not specify a start time later (younger) than the end time')
+        # Add constant rift start/end times to contintal grid samples.
+        continental_grid_samples = [tuple(sample) + (rift_start_age, rift_end_age) for sample in continental_grid_samples]
     
     # If the oldest time was not specified then instead use the oldest of ocean crust ages and continental rift start ages of the input points.
     if oldest_time is None:
@@ -1281,7 +1303,8 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
         output_xyz=False,
-        use_all_cpus=False):
+        use_all_cpus=False,
+        rifting_period=None):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
     """reconstruct_paleo_bathymetry_grids(\
@@ -1305,7 +1328,8 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
         output_xyz=False,\
-        use_all_cpus=False)
+        use_all_cpus=False\
+        rifting_period=None)
     Same as :func:`pybacktrack.reconstruct_paleo_bathymetry` but also generates present day input points on a lat/lon grid and
     outputs paleobathymetry as a NetCDF grid for each time step.
     
@@ -1400,6 +1424,12 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         If ``True`` then distribute CPU processing across all CPUs (cores).
         If a positive integer then use that many CPUs (cores).
         Defaults to ``False`` (single CPU).
+    rifting_period : tuple, optional
+        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
+        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     
     Raises
     ------
@@ -1442,7 +1472,8 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         region_plate_ids,
         anchor_plate_id,
         output_positive_bathymetry_below_sea_level,
-        use_all_cpus)
+        use_all_cpus,
+        rifting_period)
     
     # Generate a NetCDF grid for each reconstructed time of the paleobathmetry.
     write_bathymetry_grids(
@@ -1503,6 +1534,27 @@ def main():
             raise argparse.ArgumentTypeError("%g is a negative (floating-point) number" % value)
         
         return value
+
+    # Action to parse a rift period.
+    class ArgParseRiftPeriodAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            # Need two numbers (rift start and rift end).
+            if len(values) != 2:
+                parser.error('rift period must be specified as two numbers (rift start and rift end)')
+            
+            try:
+                # Convert strings to float.
+                rift_start = float(values[0])
+                rift_end = float(values[1])
+            except ValueError:
+                raise argparse.ArgumentTypeError("encountered a rift start or rift end that is not a number")
+            
+            if rift_start < 0 or rift_end < 0:
+                parser.error('rift start and end must not be negative')
+            if rift_start < rift_end:
+                parser.error('rift start must not be later (younger) than rift end')
+            
+            setattr(namespace, self.dest, (rift_start, rift_end))
     
     # Basically an argparse.RawDescriptionHelpFormatter that will also preserve formatting of
     # argument help messages if they start with "R|".
@@ -1548,6 +1600,17 @@ def main():
             metavar=('SUBDUCTING_DISTANCE_KMS', 'OVERRIDING_DISTANCE_KMS'),
             help='The two distances to present-day trenches (on subducting and overriding sides, in that order) '
                  'to exclude bathymetry grid points (in kms). Defaults to using built-in per-trench defaults.')
+    
+    parser.add_argument(
+            '-rp', '--rifting_period', nargs=2, action=ArgParseRiftPeriodAction,
+            metavar=('rift_start', 'rift_end'),
+            help='R|Optional time period of rifting specified as rift start and end times in Ma (which can be equal for instantaneous rifting).\n'
+                 'If specified then overrides rift periods sampled from builtin rift start/end grids\n'
+                 '(see {}).\n'
+                 'Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.\n'
+                 'Hence it is typically only useful for regional reconstructions (not global).\n'
+                 'Also, it is only used on continental crust (not oceanic).\n'
+                 .format(pybacktrack.bundle_data.BUNDLE_RIFTING_GRIDS_DOC_URL))
     
     # Allow user to override the default lithology filename, and also specify bundled lithologies.
     parser.add_argument(
@@ -1773,7 +1836,7 @@ def main():
         sea_level_model = None
     
     # Generate reconstructed paleo bathymetry grids over the requested time period.
-    paleo_bathymetry = reconstruct_backtrack_bathymetry_and_write_grids(
+    reconstruct_backtrack_bathymetry_and_write_grids(
         args.output_file_prefix,
         grid_spacing_degrees,
         args.oldest_time,
@@ -1794,7 +1857,8 @@ def main():
         args.anchor_plate_id,
         args.output_positive_bathymetry_below_sea_level,
         args.output_xyz,
-        args.use_all_cpus)
+        args.use_all_cpus,
+        args.rifting_period)
 
 
 if __name__ == '__main__':

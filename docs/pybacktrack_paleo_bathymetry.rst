@@ -113,6 +113,10 @@ As with regular backtracking, those sediment grid points lying inside the age gr
 However, in lieu of explicitly providing the rift start and end ages (as for a 1D drill site) each 2D grid point samples the builtin rift start/end age grids.
 Each grid point is also assigned a plate ID (using static polygons) and reconstructed back through time.
 
+.. note:: You can optionally override the rift periods sampled from the builtin rift start/end grids with a single rift period using the ``--rifting_period`` command-line option.
+          However this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+          And hence is typically only useful for regional reconstructions (not global).
+
 Each grid point has a single lithology, with an initial compacted thickness sampled from the total sediment thickness grid at present day that is progressively decompacted back through geological time.
 
 .. note:: The single lithology defaults to ``Average_ocean_floor_sediment`` which is the average of the ocean floor sediment.
