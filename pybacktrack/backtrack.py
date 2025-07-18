@@ -52,6 +52,7 @@ _MAX_TECTONIC_SUBSIDENCE_RIFTING_RESIDUAL_ERROR = 100
 
 def backtrack_well(
         well_filename,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -70,6 +71,7 @@ def backtrack_well(
     # the expanded values of the bundle filenames.
     """backtrack_well(\
         well_filename,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -190,6 +192,9 @@ def backtrack_well(
     
     The tectonic subsidence at each age (of decompacted wells) is added as a *tectonic_subsidence* attribute
     to each decompacted well returned.
+
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Read the lithologies from one or more text files.
@@ -208,10 +213,10 @@ def backtrack_well(
     well = load_well(
         well_filename,
         lithologies,
-        well_location,
-        well_bottom_age_column,
-        well_bottom_depth_column,
-        well_lithology_column)
+        well_location=well_location,
+        well_bottom_age_column=well_bottom_age_column,
+        well_bottom_depth_column=well_bottom_depth_column,
+        well_lithology_column=well_lithology_column)
     
     # There should be at least one stratigraphic unit - if not then return empty decompaction list.
     if not well.stratigraphic_units:
@@ -362,6 +367,7 @@ def backtrack_well(
 def load_well(
         well_filename,
         lithologies,
+        *,
         well_location=None,
         well_bottom_age_column=0,
         well_bottom_depth_column=1,
@@ -420,9 +426,9 @@ def load_well(
     well = read_well_file(
         well_filename,
         lithologies,
-        well_bottom_age_column,
-        well_bottom_depth_column,
-        well_lithology_column,
+        bottom_age_column=well_bottom_age_column,
+        bottom_depth_column=well_bottom_depth_column,
+        lithology_column=well_lithology_column,
         # Attributes to read from file metadata into returned well object...
         well_attributes={
             'SiteLongitude': ('longitude', read_longitude),
@@ -742,14 +748,16 @@ def write_well(
         decompacted_wells,
         decompacted_wells_filename,
         well,
+        *,
         well_attributes=None,
         decompacted_columns=DEFAULT_DECOMPACTED_COLUMNS):
     """write_backtrack_well(\
         decompacted_wells,\
         decompacted_wells_filename,\
         well,\
+        *,\
         well_attributes=None,\
-        decompacted_columns=pybacktrack.BACKTRACK_DEFAULT_DECOMPACTED_COLUMNS):
+        decompacted_columns=pybacktrack.BACKTRACK_DEFAULT_DECOMPACTED_COLUMNS)
     Write decompacted parameters as columns in a text file.
     
     Parameters
@@ -789,6 +797,11 @@ def write_well(
         If an unrecognised value is encountered in ``decompacted_columns``.
     ValueError
         If ``pybacktrack.BACKTRACK_COLUMN_LITHOLOGY`` is specified in ``decompacted_columns`` but is not the last column.
+
+    Notes
+    -----
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # If 'COLUMN_LITHOLOGY' is specified then it must be the last column.
@@ -879,6 +892,7 @@ def write_well(
 def backtrack_and_write_well(
         decompacted_output_filename,
         well_filename,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -900,6 +914,7 @@ def backtrack_and_write_well(
     """backtrack_and_write_well(\
         decompacted_output_filename,\
         well_filename,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -1042,25 +1057,28 @@ def backtrack_and_write_well(
     
     Also optionally write ammended well data (ie, including extra stratigraphic base unit) to
     ``ammended_well_output_filename`` if specified.
+
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Decompact the well.
     well, decompacted_wells = backtrack_well(
         well_filename,
-        lithology_filenames,
-        age_grid_filename,
-        topography_filename,
-        total_sediment_thickness_filename,
-        crustal_thickness_filename,
-        dynamic_topography_model,
-        sea_level_model,
-        base_lithology_name,
-        ocean_age_to_depth_model,
-        rifting_period,
-        well_location,
-        well_bottom_age_column,
-        well_bottom_depth_column,
-        well_lithology_column)
+        lithology_filenames=lithology_filenames,
+        age_grid_filename=age_grid_filename,
+        topography_filename=topography_filename,
+        total_sediment_thickness_filename=total_sediment_thickness_filename,
+        crustal_thickness_filename=crustal_thickness_filename,
+        dynamic_topography_model=dynamic_topography_model,
+        sea_level_model=sea_level_model,
+        base_lithology_name=base_lithology_name,
+        ocean_age_to_depth_model=ocean_age_to_depth_model,
+        rifting_period=rifting_period,
+        well_location=well_location,
+        well_bottom_age_column=well_bottom_age_column,
+        well_bottom_depth_column=well_bottom_depth_column,
+        well_lithology_column=well_lithology_column)
     
     # Attributes of well object to write to file as metadata.
     well_attributes = {
@@ -1083,8 +1101,8 @@ def backtrack_and_write_well(
         decompacted_output_filename,
         well,
         # Attributes of well object to write to file as metadata...
-        well_attributes,
-        decompacted_columns)
+        well_attributes=well_attributes,
+        decompacted_columns=decompacted_columns)
 
 
 #
@@ -1500,22 +1518,22 @@ def main():
     backtrack_and_write_well(
         args.output_filename,
         args.well_filename,
-        args.lithology_filenames,
-        age_grid_filename,
-        args.topography_filename,
-        total_sediment_thickness_filename,
-        args.crustal_thickness_filename,
-        dynamic_topography_model,
-        sea_level_model,
-        args.base_lithology_name,
-        args.ocean_age_to_depth_model,
-        rifting_period,
-        decompacted_columns,
-        args.well_location,
-        args.well_columns[0],  # well_bottom_age_column
-        args.well_columns[1],  # well_bottom_depth_column
-        args.well_columns[2],  # well_lithology_column
-        args.output_well_filename)
+        lithology_filenames=args.lithology_filenames,
+        age_grid_filename=age_grid_filename,
+        topography_filename=args.topography_filename,
+        total_sediment_thickness_filename=total_sediment_thickness_filename,
+        crustal_thickness_filename=args.crustal_thickness_filename,
+        dynamic_topography_model=dynamic_topography_model,
+        sea_level_model=sea_level_model,
+        base_lithology_name=args.base_lithology_name,
+        ocean_age_to_depth_model=args.ocean_age_to_depth_model,
+        rifting_period=rifting_period,
+        decompacted_columns=decompacted_columns,
+        well_location=args.well_location,
+        well_bottom_age_column=args.well_columns[0],
+        well_bottom_depth_column=args.well_columns[1],
+        well_lithology_column=args.well_columns[2],
+        ammended_well_output_filename=args.output_well_filename)
 
 
 if __name__ == '__main__':

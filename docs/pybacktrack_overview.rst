@@ -359,7 +359,11 @@ The following Python source code (using :ref:`these functions <pybacktrack_refer
     # Here we use 'exclude' (instead of the default 'clamp') to avoid getting the same age value for different depth values (outside depth range).
     out_of_bounds = 'exclude'
     # Ignore the x (depth) and y (age) values read from file by using '_'.
-    depth_to_age_model, _, _ = pybacktrack.read_interpolate_function('pybacktrack_examples/example_data/Site1089B_age_depth.txt', depth_column_index, age_column_index, out_of_bounds)
+    depth_to_age_model, _, _ = pybacktrack.read_interpolate_function(
+        'pybacktrack_examples/example_data/Site1089B_age_depth.txt',
+        depth_column_index,
+        age_column_index,
+        out_of_bounds=out_of_bounds)
     
     # Convert depth values in input file to age and depth values in output file.
     pybacktrack.convert_stratigraphic_depth_to_age_files(
@@ -384,7 +388,7 @@ The following Python source code (using :ref:`these functions <pybacktrack_refer
     
     # Read the y=f(x) function from a 2-column file.
     # Ignore the x and y values read from file by using '_'.
-    function_y_of_x, _, _ = pybacktrack.read_interpolate_function('function_y_of_x.txt', 1, 0)
+    function_y_of_x, _, _ = pybacktrack.read_interpolate_function('function_y_of_x.txt', x_column_index=1, y_column_index=0)
     
     # Convert x values in a 1-column input file to x and y values in a 2-column output file.
     pybacktrack.interpolate_file(

@@ -37,6 +37,7 @@ import warnings
 
 def backstrip_well(
         well_filename,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         sea_level_model=None,
@@ -51,6 +52,7 @@ def backstrip_well(
     # the expanded values of the bundle filenames.
     """backstrip_well(\
         well_filename,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
         sea_level_model=None,\
@@ -126,6 +128,9 @@ def backstrip_well(
     
     The min/max paleo water depths at each age (of decompacted wells) are added as
     *min_water_depth* and *max_water_depth* attributes to each decompacted well returned.
+
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Read the lithologies from one or more text files.
@@ -156,9 +161,9 @@ def backstrip_well(
     well = read_well_file(
         well_filename,
         lithologies,
-        well_bottom_age_column,
-        well_bottom_depth_column,
-        well_lithology_column,
+        bottom_age_column=well_bottom_age_column,
+        bottom_depth_column=well_bottom_depth_column,
+        lithology_column=well_lithology_column,
         # Extra columns to read into attributes 'well.StratigraphicUnit.min_water_depth' and
         # 'well.StratigraphicUnit.max_water_depth' for each row (returned in well.Well)...
         other_columns={
@@ -318,14 +323,16 @@ def write_well(
         decompacted_wells,
         decompacted_wells_filename,
         well,
+        *,
         well_attributes=None,
         decompacted_columns=DEFAULT_DECOMPACTED_COLUMNS):
     """write_backstrip_well(\
         decompacted_wells,\
         decompacted_wells_filename,\
         well,\
+        *,\
         well_attributes=None,\
-        decompacted_columns=pybacktrack.BACKTRACK_DEFAULT_DECOMPACTED_COLUMNS):
+        decompacted_columns=pybacktrack.BACKTRACK_DEFAULT_DECOMPACTED_COLUMNS)
     Write decompacted parameters as columns in a text file.
     
     Parameters
@@ -368,6 +375,11 @@ def write_well(
         If an unrecognised value is encountered in ``decompacted_columns``.
     ValueError
         If ``pybacktrack.BACKSTRIP_COLUMN_LITHOLOGY`` is specified in ``decompacted_columns`` but is not the last column.
+
+    Notes
+    -----
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # If 'COLUMN_LITHOLOGY' is specified then it must be the last column.
@@ -470,6 +482,7 @@ def write_well(
 def backstrip_and_write_well(
         decompacted_output_filename,
         well_filename,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         sea_level_model=None,
@@ -487,6 +500,7 @@ def backstrip_and_write_well(
     """backstrip_and_write_well(\
         decompacted_output_filename,\
         well_filename,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
         sea_level_model=None,\
@@ -579,21 +593,24 @@ def backstrip_and_write_well(
     
     The min/max paleo water depths at each age (of decompacted wells) are added as
     *min_water_depth* and *max_water_depth* attributes to each decompacted well returned.
+
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Decompact the well.
     well, decompacted_wells = backstrip_well(
         well_filename,
-        lithology_filenames,
-        total_sediment_thickness_filename,
-        sea_level_model,
-        base_lithology_name,
-        well_location,
-        well_bottom_age_column,
-        well_bottom_depth_column,
-        well_min_water_depth_column,
-        well_max_water_depth_column,
-        well_lithology_column)
+        lithology_filenames=lithology_filenames,
+        total_sediment_thickness_filename=total_sediment_thickness_filename,
+        sea_level_model=sea_level_model,
+        base_lithology_name=base_lithology_name,
+        well_location=well_location,
+        well_bottom_age_column=well_bottom_age_column,
+        well_bottom_depth_column=well_bottom_depth_column,
+        well_min_water_depth_column=well_min_water_depth_column,
+        well_max_water_depth_column=well_max_water_depth_column,
+        well_lithology_column=well_lithology_column)
     
     # Attributes of well object to write to file as metadata.
     well_attributes = {'longitude': 'SiteLongitude', 'latitude': 'SiteLatitude'}
@@ -603,7 +620,7 @@ def backstrip_and_write_well(
         write_well_file(
             well,
             ammended_well_output_filename,
-            ['min_water_depth', 'max_water_depth'],
+            other_column_attribute_names=['min_water_depth', 'max_water_depth'],
             # Attributes of well object to write to file as metadata...
             well_attributes=well_attributes)
     
@@ -613,8 +630,8 @@ def backstrip_and_write_well(
         decompacted_output_filename,
         well,
         # Attributes of well object to write to file as metadata...
-        well_attributes,
-        decompacted_columns)
+        well_attributes=well_attributes,
+        decompacted_columns=decompacted_columns)
 
 
 #
@@ -885,40 +902,22 @@ def main():
     else:
         sea_level_model = None
     
-    # Decompact the well.
-    well, decompacted_wells = backstrip_well(
+    # Backstrip and write output data.
+    backstrip_and_write_well(
+        args.output_filename,
         args.well_filename,
-        args.lithology_filenames,
-        total_sediment_thickness_filename,
-        sea_level_model,
-        args.base_lithology_name,
-        args.well_location,
+        lithology_filenames=args.lithology_filenames,
+        total_sediment_thickness_filename=total_sediment_thickness_filename,
+        sea_level_model=sea_level_model,
+        base_lithology_name=args.base_lithology_name,
+        decompacted_columns=decompacted_columns,
+        well_location=args.well_location,
         well_bottom_age_column=args.well_columns[0],
         well_bottom_depth_column=args.well_columns[1],
         well_min_water_depth_column=args.well_columns[2],
         well_max_water_depth_column=args.well_columns[3],
-        well_lithology_column=args.well_columns[4])
-    
-    # Attributes of well object to write to file as metadata.
-    well_attributes = {'longitude': 'SiteLongitude', 'latitude': 'SiteLatitude'}
-    
-    # Write out amended well data (ie, extra stratigraphic base unit) if requested.
-    if args.output_well_filename:
-        write_well_file(
-            well,
-            args.output_well_filename,
-            ['min_water_depth', 'max_water_depth'],
-            # Attributes of well object to write to file as metadata...
-            well_attributes=well_attributes)
-    
-    # Write the decompactions of the well at the ages of its stratigraphic units.
-    write_well(
-        decompacted_wells,
-        args.output_filename,
-        well,
-        # Attributes of well object to write to file as metadata...
-        well_attributes,
-        decompacted_columns)
+        well_lithology_column=args.well_columns[4],
+        ammended_well_output_filename=args.output_well_filename)
 
 
 if __name__ == '__main__':

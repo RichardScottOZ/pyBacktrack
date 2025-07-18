@@ -37,6 +37,7 @@ def read_curve_function(
         curve_filename,
         x_column_index=0,
         y_column_index=1,
+        *,
         out_of_bounds='clamp'):
     """Read x and y columns from a curve file and return a function y(x) that linearly interpolates.
     
@@ -68,20 +69,23 @@ def read_curve_function(
     Raises
     ------
     ValueError
-        If cannot read x and y columns, as floating-point numbers, from the curve file at column indices `x_column_index` and `y_column_index`.
+        If cannot read x and y columns, as floating-point numbers, from the curve file at column indices ``x_column_index`` and ``y_column_index``.
     ValueError
         If curve file contains no data.
     ValueError
-        If `out_of_bounds` is not `clamp`, `exclude` or `extrapolate`.
+        If ``out_of_bounds`` is not `clamp`, `exclude` or `extrapolate`.
     
     Notes
     -----
     The returned `x` and `y` columns are useful if integrating the curve function with ``scipy.integrate.quad``
     (since can pass x column to its `points` argument and `len(x)` to its `limit`).
-        
+
     .. versionchanged:: 1.5
-        Added `out_of_bounds` argument.
-        If `out_of_bounds` is `exclude` then returned curve function will return `None` for any input `x` outside the range of `x` values in curve file.
+        The following changes were made:
+
+        - Added ``out_of_bounds`` argument.
+          If ``out_of_bounds`` is `exclude` then returned curve function will return ``None`` for any input `x` outside the range of `x` values in curve file.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Each row in each file should have at least a minimum number of columns.
@@ -170,19 +174,20 @@ def interpolate_file(
         input_filename,
         output_filename,
         input_x_column_index=0,
+        *,
         reverse_output_columns=False):
     """Interpolate `curve_function` at `x` positions, read from input file, and store both `x` and interpolated `y` values to output file.
     
     Parameters
     ----------
     curve_function : function
-        A callable function `y=f(x)` accepting a single `x` argument and returning a `y` value (or `None` to exclude from output).
+        A callable function `y=f(x)` accepting a single `x` argument and returning a `y` value (or ``None`` to exclude from output).
     input_filename : string
-        Name of input text file containing the `x` positions at which to sample `curve_function`.
-        A single `x` value is obtained from each row by indexing the `input_x_column_index` column (zero-based index).
+        Name of input text file containing the `x` positions at which to sample ``curve_function``.
+        A single `x` value is obtained from each row by indexing the ``input_x_column_index`` column (zero-based index).
     output_filename : string
         Name of output text file containing `x` and `y` values.
-        Each row of output file contains an `x` value and its associated `y` value (with order depending on `reverse_output_columns`).
+        Each row of output file contains an `x` value and its associated `y` value (with order depending on ``reverse_output_columns``).
     input_x_column_index : int, optional
         Determines which column of input file to read `x` values from.
     reverse_output_columns : bool, optional
@@ -192,12 +197,15 @@ def interpolate_file(
     Raises
     ------
     ValueError
-        If cannot read an `x` value, as a floating-point number, from input file at column index `input_x_column_index`.
+        If cannot read an `x` value, as a floating-point number, from input file at column index ``input_x_column_index``.
         
     Notes
     -----
     .. versionchanged:: 1.5
-        `curve_function` can return `None`, in which case there is no output row for the input `x`.
+        The following changes were made:
+
+        - ``curve_function`` can return ``None``, in which case there is no output row for the input `x`.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     with open(input_filename, 'r') as input_file, open(output_filename, 'w') as output_file:
@@ -317,7 +325,7 @@ def main():
     args = parser.parse_args()
     
     # Read the curve function y=f(x) from curve file.
-    curve_function, _, _ = read_curve_function(args.curve_filename, args.curve_x_column, args.curve_y_column, args.out_of_bounds)
+    curve_function, _, _ = read_curve_function(args.curve_filename, args.curve_x_column, args.curve_y_column, out_of_bounds=args.out_of_bounds)
     
     # Convert x values in 1-column input file to x and y values in 2-column output file.
     interpolate_file(
@@ -325,7 +333,7 @@ def main():
         args.input_filename,
         args.output_filename,
         args.input_x_column,
-        args.reverse_output_columns)
+        reverse_output_columns=args.reverse_output_columns)
 
 
 if __name__ == '__main__':

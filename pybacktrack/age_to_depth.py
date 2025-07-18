@@ -103,9 +103,10 @@ def convert_age_to_depth_files(
         input_filename,
         output_filename,
         model=DEFAULT_MODEL,
+        *,
         age_column_index=0,
         reverse_output_columns=False):
-    """convert_age_to_depth_files(input_filename, output_filename, model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL, age_column_index=0, reverse_output_columns=False)
+    """convert_age_to_depth_files(input_filename, output_filename, model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL, *, age_column_index=0, reverse_output_columns=False)
     Converts age to depth by reading `age` rows from input file and writing rows containing both `age` and `depth` to output file.
     
     Parameters
@@ -129,6 +130,11 @@ def convert_age_to_depth_files(
     ------
     ValueError
         If cannot read `age` value, as a floating-point number, from input file at column index `age_column_index`.
+
+    Notes
+    -----
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     with open(input_filename, 'r') as input_file, open(output_filename, 'w') as output_file:
@@ -397,8 +403,8 @@ def main():
         args.input_filename,
         args.output_filename,
         args.model,
-        args.age_column,
-        args.reverse_output_columns)
+        age_column_index=args.age_column,
+        reverse_output_columns=args.reverse_output_columns)
 
 
 if __name__ == '__main__':

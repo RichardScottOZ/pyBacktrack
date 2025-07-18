@@ -86,6 +86,7 @@ def reconstruct_backtrack_bathymetry(
         input_points,  # note: you can use 'generate_input_points_grid()' to generate a global lat/lon grid
         oldest_time=None,
         time_increment=1,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -97,18 +98,19 @@ def reconstruct_backtrack_bathymetry(
         sea_level_model=None,
         lithology_name=DEFAULT_LITHOLOGY_NAME,
         ocean_age_to_depth_model=age_to_depth.DEFAULT_MODEL,
+        rifting_period=None,
         exclude_distances_to_trenches_kms=None,
         region_plate_ids=None,
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
-        use_all_cpus=False,
-        rifting_period=None):
+        use_all_cpus=False):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
     """reconstruct_paleo_bathymetry(\
         input_points,\
         oldest_time=None,\
         time_increment=1,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -120,12 +122,12 @@ def reconstruct_backtrack_bathymetry(
         sea_level_model=None,\
         lithology_name=pybacktrack.DEFAULT_PALEO_BATHYMETRY_LITHOLOGY_NAME,\
         ocean_age_to_depth_model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL,\
+        rifting_period=None,\
         exclude_distances_to_trenches_kms=None,\
         region_plate_ids=None,\
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
-        use_all_cpus=False,\
-        rifting_period=None)
+        use_all_cpus=False)
     Reconstructs and backtracks sediment-covered crust through time to get paleo bathymetry.
     
     Parameters
@@ -196,6 +198,12 @@ def reconstruct_backtrack_bathymetry(
         The model to use when converting ocean age to depth at a location
         (if on ocean floor - not used for continental passive margin).
         It can be one of the enumerated values, or a callable function accepting a single non-negative age parameter and returning depth (in metres).
+    rifting_period : tuple, optional
+        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
+        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     exclude_distances_to_trenches_kms : 2-tuple of float, optional
         The two distances to present-day trenches (on subducting and overriding sides, in that order) to exclude bathymetry grid points (in kms), or
         None to use built-in per-trench defaults. Default is None.
@@ -213,12 +221,6 @@ def reconstruct_backtrack_bathymetry(
         If ``True`` then distribute CPU processing across all CPUs (cores).
         If a positive integer then use that many CPUs (cores).
         Defaults to ``False`` (single CPU).
-    rifting_period : tuple, optional
-        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
-        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
-        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
-        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     
     Returns
     -------
@@ -238,11 +240,15 @@ def reconstruct_backtrack_bathymetry(
     Note that this is the inverse of water depth (which is positive below sea level).
 
     Any input points outside the masked region of the total sediment thickness grid are ignored (since bathymetry relies on sediment decompaction over time).
-        
+
     .. versionadded:: 1.4
 
     .. versionchanged:: 1.5
-        ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of input points).
+        The following changes were made:
+
+        - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
+        - Added ``rifting_period`` argument to optionally override rift periods sampled from builtin rift start/end grids.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
    
     #
@@ -1204,12 +1210,14 @@ def write_bathymetry_grids(
         paleo_bathymetry,
         grid_spacing_degrees,
         output_file_prefix,
+        *,
         output_xyz=False,
         use_all_cpus=False):
     """write_paleo_bathymetry_grids(\
         paleo_bathymetry,\
         grid_spacing_degrees,\
         output_file_prefix,\
+        *,\
         output_xyz=False,\
         use_all_cpus=False)
     Grid paleo bathymetry into a NetCDF grid for each time step.
@@ -1238,6 +1246,9 @@ def write_bathymetry_grids(
     Notes
     -----
     .. versionadded:: 1.4
+
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # Generate a paleo bathymetry grid file for each reconstruction time in the requested time period.
@@ -1287,6 +1298,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         grid_spacing_degrees,
         oldest_time=None,
         time_increment=1,
+        *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -1298,13 +1310,13 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         sea_level_model=None,
         lithology_name=DEFAULT_LITHOLOGY_NAME,
         ocean_age_to_depth_model=age_to_depth.DEFAULT_MODEL,
+        rifting_period=None,
         exclude_distances_to_trenches_kms=None,
         region_plate_ids=None,
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
         output_xyz=False,
-        use_all_cpus=False,
-        rifting_period=None):
+        use_all_cpus=False):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
     """reconstruct_paleo_bathymetry_grids(\
@@ -1312,6 +1324,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         grid_spacing_degrees,\
         oldest_time=None,\
         time_increment=1,\
+        *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -1323,13 +1336,13 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         sea_level_model=None,\
         lithology_name=pybacktrack.DEFAULT_PALEO_BATHYMETRY_LITHOLOGY_NAME,\
         ocean_age_to_depth_model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL,\
+        rifting_period=None,\
         exclude_distances_to_trenches_kms=None,\
         region_plate_ids=None,\
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
         output_xyz=False,\
-        use_all_cpus=False\
-        rifting_period=None)
+        use_all_cpus=False)
     Same as :func:`pybacktrack.reconstruct_paleo_bathymetry` but also generates present day input points on a lat/lon grid and
     outputs paleobathymetry as a NetCDF grid for each time step.
     
@@ -1403,6 +1416,12 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         The model to use when converting ocean age to depth at a location
         (if on ocean floor - not used for continental passive margin).
         It can be one of the enumerated values, or a callable function accepting a single non-negative age parameter and returning depth (in metres).
+    rifting_period : tuple, optional
+        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
+        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     exclude_distances_to_trenches_kms : 2-tuple of float, optional
         The two distances to present-day trenches (on subducting and overriding sides, in that order) to exclude bathymetry grid points (in kms), or
         None to use built-in per-trench defaults. Default is None.
@@ -1424,12 +1443,6 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         If ``True`` then distribute CPU processing across all CPUs (cores).
         If a positive integer then use that many CPUs (cores).
         Defaults to ``False`` (single CPU).
-    rifting_period : tuple, optional
-        Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
-        Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
-        Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
-        (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     
     Raises
     ------
@@ -1446,7 +1459,11 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
     .. versionadded:: 1.4
 
     .. versionchanged:: 1.5
-        ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
+        The following changes were made:
+
+        - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
+        - Added ``rifting_period`` argument to optionally override rift periods sampled from builtin rift start/end grids.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
 
     # Generate a global latitude/longitude grid of points (with the requested grid spacing).
@@ -1457,31 +1474,31 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         input_points,
         oldest_time,
         time_increment,
-        lithology_filenames,
-        age_grid_filename,
-        topography_filename,
-        total_sediment_thickness_filename,
-        crustal_thickness_filename,
-        rotation_filenames,
-        static_polygon_filename,
-        dynamic_topography_model,
-        sea_level_model,
-        lithology_name,
-        ocean_age_to_depth_model,
-        exclude_distances_to_trenches_kms,
-        region_plate_ids,
-        anchor_plate_id,
-        output_positive_bathymetry_below_sea_level,
-        use_all_cpus,
-        rifting_period)
+        lithology_filenames=lithology_filenames,
+        age_grid_filename=age_grid_filename,
+        topography_filename=topography_filename,
+        total_sediment_thickness_filename=total_sediment_thickness_filename,
+        crustal_thickness_filename=crustal_thickness_filename,
+        rotation_filenames=rotation_filenames,
+        static_polygon_filename=static_polygon_filename,
+        dynamic_topography_model=dynamic_topography_model,
+        sea_level_model=sea_level_model,
+        lithology_name=lithology_name,
+        ocean_age_to_depth_model=ocean_age_to_depth_model,
+        rifting_period=rifting_period,
+        exclude_distances_to_trenches_kms=exclude_distances_to_trenches_kms,
+        region_plate_ids=region_plate_ids,
+        anchor_plate_id=anchor_plate_id,
+        output_positive_bathymetry_below_sea_level=output_positive_bathymetry_below_sea_level,
+        use_all_cpus=use_all_cpus)
     
     # Generate a NetCDF grid for each reconstructed time of the paleobathmetry.
     write_bathymetry_grids(
         paleo_bathymetry,
         grid_spacing_degrees,
         output_file_prefix,
-        output_xyz,
-        use_all_cpus)
+        output_xyz=output_xyz,
+        use_all_cpus=use_all_cpus)
 
 
 ########################
@@ -1841,24 +1858,24 @@ def main():
         grid_spacing_degrees,
         args.oldest_time,
         args.time_increment,
-        args.lithology_filenames,
-        args.age_grid_filename,
-        args.topography_filename,
-        args.total_sediment_thickness_filename,
-        args.crustal_thickness_filename,
-        args.rotation_filenames,
-        args.static_polygon_filename,
-        dynamic_topography_model,
-        sea_level_model,
-        args.lithology_name,
-        args.ocean_age_to_depth_model,
-        args.exclude_distances_to_trenches_kms,
-        args.region_plate_ids,
-        args.anchor_plate_id,
-        args.output_positive_bathymetry_below_sea_level,
-        args.output_xyz,
-        args.use_all_cpus,
-        args.rifting_period)
+        lithology_filenames=args.lithology_filenames,
+        age_grid_filename=args.age_grid_filename,
+        topography_filename=args.topography_filename,
+        total_sediment_thickness_filename=args.total_sediment_thickness_filename,
+        crustal_thickness_filename=args.crustal_thickness_filename,
+        rotation_filenames=args.rotation_filenames,
+        static_polygon_filename=args.static_polygon_filename,
+        dynamic_topography_model=dynamic_topography_model,
+        sea_level_model=sea_level_model,
+        lithology_name=args.lithology_name,
+        ocean_age_to_depth_model=args.ocean_age_to_depth_model,
+        rifting_period=args.rifting_period,
+        exclude_distances_to_trenches_kms=args.exclude_distances_to_trenches_kms,
+        region_plate_ids=args.region_plate_ids,
+        anchor_plate_id=args.anchor_plate_id,
+        output_positive_bathymetry_below_sea_level=args.output_positive_bathymetry_below_sea_level,
+        output_xyz=args.output_xyz,
+        use_all_cpus=args.use_all_cpus)
 
 
 if __name__ == '__main__':

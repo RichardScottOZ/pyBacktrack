@@ -235,7 +235,7 @@ class ArgParseAgeModelAction(argparse.Action):
             out_of_bounds = get_out_of_bounds(values[3])
         
         # Read the model age(depth) where 'x' is depth and 'y' is age (in the returned function y=f(x)).
-        model, _, _ = read_curve_function(depth_to_age_model_filename, depth_column_index, age_column_index, out_of_bounds)
+        model, _, _ = read_curve_function(depth_to_age_model_filename, depth_column_index, age_column_index, out_of_bounds=out_of_bounds)
         
         setattr(namespace, self.dest, model)
 

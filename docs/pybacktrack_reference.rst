@@ -57,6 +57,8 @@ Summary
 
 :func:`pybacktrack.write_backstrip_well` writes decompacted parameters as columns in a text file.
 
+:func:`pybacktrack.backstrip_and_write_well` both backstrips well and writes decompacted data.
+
 Detail
 ^^^^^^
 

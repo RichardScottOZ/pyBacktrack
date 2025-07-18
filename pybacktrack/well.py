@@ -615,7 +615,7 @@ class Well(object):
         """
         
         self._add_compacted_unit(
-            StratigraphicUnit(top_age, bottom_age, top_depth, bottom_depth, lithology_components, lithologies, other_attributes))
+            StratigraphicUnit(top_age, bottom_age, top_depth, bottom_depth, lithology_components, lithologies, other_attributes=other_attributes))
     
     def _add_compacted_unit(self, stratigraphic_unit):
         # If adding first unit then check that it has zero top depth.
@@ -1222,6 +1222,7 @@ class DecompactedWell(object):
 def read_well_file(
         well_filename,
         lithologies,
+        *,
         bottom_age_column=0,
         bottom_depth_column=1,
         lithology_column=2,
@@ -1275,6 +1276,9 @@ def read_well_file(
     
     If file contains ``SurfaceAge = <age>`` in commented (``#``) lines then the top age of the
     youngest stratigraphic unit will have that age, otherwise it defaults to 0Ma (present day).
+        
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     if (max(bottom_age_column, bottom_depth_column) >= lithology_column or
@@ -1415,7 +1419,12 @@ def read_well_file(
     return well
 
 
-def write_well_file(well, well_filename, other_column_attribute_names=None, well_attributes=None):
+def write_well_file(
+        well,
+        well_filename,
+        *,
+        other_column_attribute_names=None,
+        well_attributes=None):
     """
     Writes a text file with each row representing a stratigraphic unit.
     
@@ -1436,6 +1445,11 @@ def write_well_file(well, well_filename, other_column_attribute_names=None, well
         For example, {'longitude' : 'SiteLongitude', 'latitude' : 'SiteLatitude'}
         will write well.longitude (if not None) to metadata 'SiteLongitude', etc.
         Not that the attributes must exist in ``well`` (but can be set to None).
+        
+    Notes
+    -----
+    .. versionchanged:: 1.5
+        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     if not well.stratigraphic_units:

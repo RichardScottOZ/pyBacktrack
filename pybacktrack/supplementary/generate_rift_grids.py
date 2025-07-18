@@ -315,7 +315,7 @@ def find_continent_rift_parameters_in_deforming_regions(
             topology_point_locations = time_spans.get_topology_point_locations(time, return_inactive_points=True)
             crustal_stretching_factors = time_spans.get_scalar_values(time, return_inactive_points=True)[pygplates.ScalarType.gpml_crustal_stretching_factor]
             for reconstructed_point_index, topology_point_location in enumerate(topology_point_locations):
-                # We didn't ask for any points to be deactivated, so this shouldn't happen, but check just in case.
+                # See if current point has been deactivated.
                 if not topology_point_location:
                     finished_reconstructed_point_indices.add(reconstructed_point_index)
                     continue
@@ -348,6 +348,10 @@ def find_continent_rift_parameters_in_deforming_regions(
         # These will be our initial points at the initial time of the next time span.
         reconstructed_points = time_spans.get_geometry_points(final_time, return_inactive_points=True)
         reconstructed_crustal_stretching_factors = time_spans.get_scalar_values(final_time, return_inactive_points=True)[pygplates.ScalarType.gpml_crustal_stretching_factor]
+        
+        # If we've found rift start/end times for all points in the group then we're done with the group.
+        if not reconstructed_points:
+            break
 
         # Remove those reconstructed points/scalars that we've found rift start/end times for.
         # Note: We process in reverse order so that indices are not affected by previous removals.
@@ -355,10 +359,6 @@ def find_continent_rift_parameters_in_deforming_regions(
             del reconstructed_points[reconstructed_point_index]
             del reconstructed_crustal_stretching_factors[reconstructed_point_index]
             del reconstructed_point_indices[reconstructed_point_index]
-        
-        # If we've found rift start/end times for all points in the group then we're done with the group.
-        if not reconstructed_points:
-            break
 
     
     continent_rift_parameter_points = []
