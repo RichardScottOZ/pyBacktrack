@@ -55,7 +55,7 @@ setup(
     packages=['pybacktrack', 'pybacktrack.util'],
     install_requires=['numpy', 'scipy', 'setuptools'],
     setup_requires=[] + pytest_runner,
-    tests_require=['pytest', 'pytest-pep8'],
+    tests_require=['pytest'],
     python_requires='>=3.8',
     #
     # From the setuptools docs...
