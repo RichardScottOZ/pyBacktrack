@@ -88,7 +88,7 @@ def test_backtrack_ODP(tmpdir):
     #         --
     #         ODP-114-699_backtrack_decompacted.txt
     #
-    pybacktrack.backtrack_and_write_well(
+    well, decompacted_wells = pybacktrack.backtrack_and_write_well(
         str(test_decompacted_output_filename),
         str(input_well_filename),
         ocean_age_to_depth_model=pybacktrack.AGE_TO_DEPTH_MODEL_GDH1,
@@ -136,7 +136,7 @@ def test_backtrack_DSDP(tmpdir):
         # Ignore user warnings related to dynamic topography.
         warnings.simplefilter("ignore", UserWarning)
         
-        pybacktrack.backtrack_and_write_well(
+        well, decompacted_wells = pybacktrack.backtrack_and_write_well(
             str(test_decompacted_output_filename),
             str(input_well_filename),
             dynamic_topography_model='M2',

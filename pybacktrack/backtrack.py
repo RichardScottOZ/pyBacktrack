@@ -63,6 +63,7 @@ def backtrack_well(
         base_lithology_name=DEFAULT_BASE_LITHOLOGY_NAME,
         ocean_age_to_depth_model=age_to_depth.DEFAULT_MODEL,
         rifting_period=None,
+        output_rift_stretching_factor=False,
         well_location=None,
         well_bottom_age_column=0,
         well_bottom_depth_column=1,
@@ -82,6 +83,7 @@ def backtrack_well(
         base_lithology_name=pybacktrack.DEFAULT_BASE_LITHOLOGY_NAME,\
         ocean_age_to_depth_model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL,\
         rifting_period=None,\
+        output_rift_stretching_factor=False,\
         well_location=None,\
         well_bottom_age_column=0,\
         well_bottom_depth_column=1,\
@@ -154,6 +156,10 @@ def backtrack_well(
         If specified then overrides value in well file (and value from builtin rift start/end grids).
         If well is on continental passive margin then at least rift end age should be specified either here or in well file, or
         well location must be inside rifting region of builtin rift start/end grids, otherwise a ValueError exception will be raised.
+    output_rift_stretching_factor: bool, optional
+        Whether to output the rift stretching (beta) factor.
+        This is the optimal stretching factor at the well location if it is on submerged continental crust (not just the areas that are rifting), otherwise ``None``.
+        Defaults to ``False`` (not output).
     well_location : tuple, optional
         Optional location of well.
         If not provided then is extracted from the ``well_filename`` file.
@@ -168,12 +174,16 @@ def backtrack_well(
     
     Returns
     -------
-    :class:`pybacktrack.Well`
+    well : :class:`pybacktrack.Well`
         The well read from ``well_filename``.
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
-    list of :class:`pybacktrack.DecompactedWell`
+    decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
         There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
+    rift_stretching_factor : float or None
+        Only provided when ``output_rift_stretching_factor`` is ``True``.
+        Optimal stretching (beta) factor at well location if it is on submerged continental crust (not just the areas that are rifting), otherwise ``None``.
+        Note that if ``output_rift_stretching_factor`` is ``False`` then nothing is returned here (not even ``None``).
     
     Raises
     ------
@@ -194,7 +204,11 @@ def backtrack_well(
     to each decompacted well returned.
 
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        - Added optional ``output_rift_stretching_factor`` argument (and corresponding optional ``rift_stretching_factor`` return value).
+        - Now returns tuple (``well``, ``decompacted_wells``, and optionally ``rift_stretching_factor``). Previously returned nothing.
     """
     
     # Read the lithologies from one or more text files.
@@ -352,16 +366,26 @@ def backtrack_well(
             ocean_age_to_depth_model,
             age,
             dynamic_topography)
+        # There's no rifting with oceanic subsidence.
+        if output_rift_stretching_factor:
+            rift_stretching_factor = None
     else:
         # Continental crust.
-        _add_continental_tectonic_subsidence(
+        continent_output = _add_continental_tectonic_subsidence(
             well,
             decompacted_wells,
             present_day_tectonic_subsidence,
             present_day_crustal_thickness,
-            dynamic_topography)
+            dynamic_topography,
+            output_rift_stretching_factor)
+        # The return value of '_add_continental_tectonic_subsidence()' can be a rift stretching factor.
+        if output_rift_stretching_factor:
+            rift_stretching_factor = continent_output
     
-    return well, decompacted_wells
+    if output_rift_stretching_factor:
+        return well, decompacted_wells, rift_stretching_factor
+    else:
+        return well, decompacted_wells
     
     
 def load_well(
@@ -603,7 +627,8 @@ def _add_continental_tectonic_subsidence(
         decompacted_wells,
         present_day_tectonic_subsidence,
         present_day_crustal_thickness,
-        dynamic_topography=None):
+        dynamic_topography=None,
+        output_rift_stretching_factor=False):
     """
     Calculate tectonic subsidence for a well on continental passive margin (outside age grid).
     
@@ -630,13 +655,13 @@ def _add_continental_tectonic_subsidence(
         present_day_tectonic_subsidence += dynamic_topography_at_present_day - dynamic_topography_at_rift_start
     
     # Attempt to estimate rifting stretching factor (beta) that generates the present day tectonic subsidence.
-    beta, subsidence_residual = rifting.estimate_beta(
+    rift_beta, subsidence_residual = rifting.estimate_beta(
         present_day_tectonic_subsidence,
         present_day_crustal_thickness,
         well.rift_end_age)
     
     # Initial (pre-rift) crustal thickness is beta times present day crustal thickness.
-    pre_rift_crustal_thickness = beta * present_day_crustal_thickness
+    pre_rift_crustal_thickness = rift_beta * present_day_crustal_thickness
     
     # Warn the user if the rifting stretching factor (beta) estimate results in a
     # tectonic subsidence inaccuracy (at present day) exceeding this amount (in metres).
@@ -661,7 +686,7 @@ def _add_continental_tectonic_subsidence(
         
         # Calculate rifting subsidence at decompaction time.
         decompacted_well.tectonic_subsidence = rifting.total_subsidence(
-            beta, pre_rift_crustal_thickness, decompaction_time, well.rift_end_age, well.rift_start_age)
+            rift_beta, pre_rift_crustal_thickness, decompaction_time, well.rift_end_age, well.rift_start_age)
         
         # If we have dynamic topography then add in the difference at current decompaction time compared to rift start.
         if dynamic_topography:
@@ -673,6 +698,10 @@ def _add_continental_tectonic_subsidence(
             
             # Also record the change in dynamic topography since present day, since it's a useful quantity for the user to access.
             decompacted_well.dynamic_topography = dynamic_topography_at_decompaction_time - dynamic_topography_at_present_day
+    
+    if output_rift_stretching_factor:
+        return rift_beta
+    # else returning nothing means returning None
 
 
 def _sample_grid(longitude, latitude, grid_filename):
@@ -903,6 +932,7 @@ def backtrack_and_write_well(
         base_lithology_name=DEFAULT_BASE_LITHOLOGY_NAME,
         ocean_age_to_depth_model=age_to_depth.DEFAULT_MODEL,
         rifting_period=None,
+        output_rift_stretching_factor=False,\
         decompacted_columns=DEFAULT_DECOMPACTED_COLUMNS,
         well_location=None,
         well_bottom_age_column=0,
@@ -925,6 +955,7 @@ def backtrack_and_write_well(
         base_lithology_name=pybacktrack.DEFAULT_BASE_LITHOLOGY_NAME,\
         ocean_age_to_depth_model=pybacktrack.AGE_TO_DEPTH_DEFAULT_MODEL,\
         rifting_period=None,\
+        output_rift_stretching_factor=False,\
         decompacted_columns=pybacktrack.BACKTRACK_DEFAULT_DECOMPACTED_COLUMNS,\
         well_location=None,\
         well_bottom_age_column=0,\
@@ -1006,6 +1037,10 @@ def backtrack_and_write_well(
         If specified then overrides value in well file (and value from builtin rift start/end grids).
         If well is on continental passive margin then at least rift end age should be specified either here or in well file, or
         well location must be inside rifting region of builtin rift start/end grids, otherwise a ValueError exception will be raised.
+    output_rift_stretching_factor: bool, optional
+        Whether to output the rift stretching (beta) factor.
+        This is the optimal stretching factor at the well location if it is on submerged continental crust (not just the areas that are rifting), otherwise ``None``.
+        Defaults to ``False`` (not output).
     decompacted_columns : list of columns, optional
         The decompacted columns (and their order) to output to ``decompacted_wells_filename``.
         
@@ -1037,6 +1072,19 @@ def backtrack_and_write_well(
     ammended_well_output_filename: string, optional
         Amended well data filename. Useful if an extra stratigraphic base unit is added from well bottom to ocean basement.
     
+    Returns
+    -------
+    well : :class:`pybacktrack.Well`
+        The well read from ``well_filename``.
+        It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
+    decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
+        The decompacted wells associated with the well.
+        There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
+    rift_stretching_factor : float or None
+        Only provided when ``output_rift_stretching_factor`` is ``True``.
+        Optimal stretching (beta) factor at well location if it is on submerged continental crust (not just the areas that are rifting), otherwise ``None``.
+        Note that if ``output_rift_stretching_factor`` is ``False`` then nothing is returned here (not even ``None``).
+    
     Raises
     ------
     ValueError
@@ -1049,21 +1097,20 @@ def backtrack_and_write_well(
     
     Notes
     -----
-    Each attribute to read from well file (eg, bottom_age, bottom_depth, etc) has a column index to direct
-    which column it should be read from.
-    """
-    """
     Backtrack well in ``well_filename`` and write decompacted data to ``decompacted_output_filename``.
     
-    Also optionally write ammended well data (ie, including extra stratigraphic base unit) to
-    ``ammended_well_output_filename`` if specified.
+    Also optionally write ammended well data (ie, including extra stratigraphic base unit) to ``ammended_well_output_filename`` if specified.
 
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        - Added optional ``output_rift_stretching_factor`` argument (and corresponding optional ``rift_stretching_factor`` return value).
+        - Now returns tuple (``well``, ``decompacted_wells``, and optionally ``rift_stretching_factor``). Previously returned nothing.
     """
     
     # Decompact the well.
-    well, decompacted_wells = backtrack_well(
+    backtrack_well_output = backtrack_well(
         well_filename,
         lithology_filenames=lithology_filenames,
         age_grid_filename=age_grid_filename,
@@ -1075,10 +1122,17 @@ def backtrack_and_write_well(
         base_lithology_name=base_lithology_name,
         ocean_age_to_depth_model=ocean_age_to_depth_model,
         rifting_period=rifting_period,
+        output_rift_stretching_factor=output_rift_stretching_factor,
         well_location=well_location,
         well_bottom_age_column=well_bottom_age_column,
         well_bottom_depth_column=well_bottom_depth_column,
         well_lithology_column=well_lithology_column)
+    
+    # The return value of 'backtrack_well()' can be a 3-tuple (adding the rift stretching factor, or None).
+    if output_rift_stretching_factor:
+        well, decompacted_wells, rift_stretching_factor = backtrack_well_output
+    else:
+        well, decompacted_wells = backtrack_well_output
     
     # Attributes of well object to write to file as metadata.
     well_attributes = {
@@ -1103,6 +1157,11 @@ def backtrack_and_write_well(
         # Attributes of well object to write to file as metadata...
         well_attributes=well_attributes,
         decompacted_columns=decompacted_columns)
+    
+    if output_rift_stretching_factor:
+        return well, decompacted_wells, rift_stretching_factor
+    else:
+        return well, decompacted_wells
 
 
 #
@@ -1444,6 +1503,12 @@ def main():
              'If specified then each row should contain an age column followed by a column for sea level (in metres).')
     
     parser.add_argument(
+        '-prs', '--print_rift_stretching_factor', action='store_true',
+        help='Optionally print the rift stretching (beta) factor. '
+             'This will print (to standard output) the optimal stretching factor at the drill site if it is on submerged continental crust '
+             '(not just on an area that is rifting), otherwise it will print "None".')
+    
+    parser.add_argument(
         'output_filename', type=str,
         metavar='output_filename',
         help='The output filename used to store the decompacted total sediment thickness and '
@@ -1515,7 +1580,7 @@ def main():
         sea_level_model = None
     
     # Backtrack and write output data.
-    backtrack_and_write_well(
+    backtrack_well_output = backtrack_and_write_well(
         args.output_filename,
         args.well_filename,
         lithology_filenames=args.lithology_filenames,
@@ -1528,12 +1593,19 @@ def main():
         base_lithology_name=args.base_lithology_name,
         ocean_age_to_depth_model=args.ocean_age_to_depth_model,
         rifting_period=rifting_period,
+        output_rift_stretching_factor=args.print_rift_stretching_factor,
         decompacted_columns=decompacted_columns,
         well_location=args.well_location,
         well_bottom_age_column=args.well_columns[0],
         well_bottom_depth_column=args.well_columns[1],
         well_lithology_column=args.well_columns[2],
         ammended_well_output_filename=args.output_well_filename)
+    
+    # If we've been requested to print the optimal rift stretching (beta) factor.
+    if args.print_rift_stretching_factor:
+        # The return value of 'backtrack_and_write_well()' can be a 3-tuple (adding the rift stretching factor, or None).
+        _, _, rift_stretching_factor = backtrack_well_output
+        print('Optimal rift stretching (beta) factor: {}'.format(rift_stretching_factor), file=sys.stdout)
 
 
 if __name__ == '__main__':

@@ -103,6 +103,7 @@ def reconstruct_backtrack_bathymetry(
         region_plate_ids=None,
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
+        output_rift_stretching_factors=False,
         use_all_cpus=False):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
@@ -127,6 +128,7 @@ def reconstruct_backtrack_bathymetry(
         region_plate_ids=None,\
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
+        output_rift_stretching_factors=False,\
         use_all_cpus=False)
     Reconstructs and backtracks sediment-covered crust through time to get paleo bathymetry.
     
@@ -216,6 +218,10 @@ def reconstruct_backtrack_bathymetry(
         Whether to output positive bathymetry values below sea level (the same as backtracked water depths at a drill site).
         However topography/bathymetry grids typically have negative values below sea level (and positive above).
         So the default (``False``) matches typical topography/bathymetry grids (ie, outputs negative bathymetry values below sea level).
+    output_rift_stretching_factors: bool, optional
+        Whether to output the rift stretching (beta) factors.
+        These are the optimal stretching factor at each present day grid point where there is submerged continental crust (not just the areas that are rifting).
+        Defaults to ``False`` (not output).
     use_all_cpus : bool or int, optional
         If ``False`` (or zero) then use a single CPU.
         If ``True`` then distribute CPU processing across all CPUs (cores).
@@ -224,10 +230,14 @@ def reconstruct_backtrack_bathymetry(
     
     Returns
     -------
-    dict mapping each time to a list of 3-tuple (longitude, latitude, bathymetry)
+    paleo_bathymetry : dict mapping each time to a list of 3-tuple (longitude, latitude, bathymetry)
         The reconstructed paleo bathymetry points from present day to the oldest time (see ``oldest_time``) in increments of ``time_increment``.
         Each key in the returned dict is one of those times and each value in the dict is a list of reconstructed paleo bathymetries
-        represented as a 3-tuple containing reconstructed longitude, reconstructed latitude and paleo bathmetry.
+        represented as a 3-tuple containing *reconstructed* longitude, *reconstructed* latitude and paleo bathmetry.
+    rift_stretching_factors : list of 3-tuple (longitude, latitude, bathymetry)
+        Only provided if ``output_rift_stretching_factors`` is ``True``.
+        Optimal stretching (beta) factors at present day grid points where there is submerged continental crust (not just the areas that are rifting).
+        Each list entry is a 3-tuple containing *present day* longitude, *present day* latitude and optimal stretching (beta) factor.
     
     Raises
     ------
@@ -247,7 +257,8 @@ def reconstruct_backtrack_bathymetry(
         The following changes were made:
 
         - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
-        - Added ``rifting_period`` argument to optionally override rift periods sampled from builtin rift start/end grids.
+        - Added optional ``rifting_period`` argument.
+        - Added optional ``output_rift_stretching_factors`` argument (and corresponding optional ``rift_stretching_factors`` return value).
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
    
@@ -489,7 +500,11 @@ def reconstruct_backtrack_bathymetry(
                 sea_levels,
                 rotation_filenames,
                 anchor_plate_id,
-                output_positive_bathymetry_below_sea_level)
+                output_positive_bathymetry_below_sea_level,
+                output_rift_stretching_factors)
+        # The return value of each call to '_reconstruct_backtrack_continental_bathymetry()' can be a 2-tuple (adding rift stretching factors).
+        if output_rift_stretching_factors:
+            continental_paleo_bathymetry, rift_stretching_factors = continental_paleo_bathymetry
         
         # Combine the oceanic and continental paleo bathymetry dicts into a single bathymetry dict.
         paleo_bathymetry = {time : [] for time in time_range}
@@ -497,7 +512,10 @@ def reconstruct_backtrack_bathymetry(
             for time, bathymetries in paleo_bathymetry_dict.items():
                 paleo_bathymetry[time].extend(bathymetries)
         
-        return paleo_bathymetry
+        if output_rift_stretching_factors:
+            return paleo_bathymetry, rift_stretching_factors
+        else:
+            return paleo_bathymetry
      
     # Divide the oceanic grid samples into a number of groups equal to twice the number of CPUs in case some groups of samples take longer to process than others.
     num_oceanic_grid_sample_groups = 2 * num_cpus
@@ -541,7 +559,8 @@ def reconstruct_backtrack_bathymetry(
                     sea_levels=sea_levels,
                     rotation_filenames=rotation_filenames,
                     anchor_plate_id=anchor_plate_id,
-                    output_positive_bathymetry_below_sea_level=output_positive_bathymetry_below_sea_level),
+                    output_positive_bathymetry_below_sea_level=output_positive_bathymetry_below_sea_level,
+                    output_rift_stretching_factors=output_rift_stretching_factors),
                 (
                     continental_grid_samples[
                         continental_grid_sample_group_index * num_continental_grid_samples_per_group :
@@ -550,6 +569,12 @@ def reconstruct_backtrack_bathymetry(
                 ),
                 1) # chunksize
     
+    # The return value of each call to '_reconstruct_backtrack_continental_bathymetry()' can be a 2-tuple (adding rift stretching factors).
+    if output_rift_stretching_factors:
+        continental_paleo_bathymetry_dict_list, rift_stretching_factors_list = zip(*continental_paleo_bathymetry_dict_list)
+        # Merge output lists back into one list.
+        rift_stretching_factors = list(itertools.chain.from_iterable(rift_stretching_factors_list))
+    
     # Combine the pool bathymetry dicts into a single bathymetry dict.
     paleo_bathymetry = {time : [] for time in time_range}
     for paleo_bathymetry_dict_list in (oceanic_paleo_bathymetry_dict_list, continental_paleo_bathymetry_dict_list):
@@ -557,7 +582,10 @@ def reconstruct_backtrack_bathymetry(
             for time, bathymetries in paleo_bathymetry_dict.items():
                 paleo_bathymetry[time].extend(bathymetries)
     
-    return paleo_bathymetry
+    if output_rift_stretching_factors:
+        return paleo_bathymetry, rift_stretching_factors
+    else:
+        return paleo_bathymetry
 
 
 def _reconstruct_backtrack_oceanic_bathymetry(
@@ -695,7 +723,8 @@ def _reconstruct_backtrack_continental_bathymetry(
         sea_levels,
         rotation_filenames,
         anchor_plate_id,
-        output_positive_bathymetry_below_sea_level):
+        output_positive_bathymetry_below_sea_level,
+        output_rift_stretching_factors):
 
     # Rotation model used to reconstruct the grid points.
     # Cache enough internal reconstruction trees so that we're not constantly recreating them as we move from point to point.
@@ -740,6 +769,9 @@ def _reconstruct_backtrack_continental_bathymetry(
     
     # Paleo bathymetry is stored as a dictionary mapping each age in time range to a list of 3-tuples (lon, lat, bathymetry).
     paleo_bathymetry = {time : [] for time in time_range}
+
+    if output_rift_stretching_factors:
+        rift_stretching_factors = []
 
     # Iterate over the *continental* grid samples.
     for grid_sample_index, (longitude, latitude, present_day_total_sediment_thickness, present_day_water_depth, reconstruction_plate_id, age, present_day_crustal_thickness, rift_start_age, rift_end_age) in enumerate(continental_grid_samples):
@@ -789,6 +821,10 @@ def _reconstruct_backtrack_continental_bathymetry(
         # exceeds typical lithospheric thicknesses.
         if math.fabs(subsidence_residual) > _MAX_TECTONIC_SUBSIDENCE_RIFTING_RESIDUAL_ERROR:
             continue
+
+        if output_rift_stretching_factors:
+            # Add the estimated rifting stretching factor (beta) and its present day location to the list.
+            rift_stretching_factors.append((longitude, latitude, rift_beta))
         
         # Initial (pre-rift) crustal thickness is beta times present day crustal thickness.
         pre_rift_crustal_thickness = rift_beta * present_day_crustal_thickness
@@ -842,7 +878,10 @@ def _reconstruct_backtrack_continental_bathymetry(
             # Add the bathymetry (and its reconstructed location) to the list of bathymetry points for the current decompaction time.
             paleo_bathymetry[decompaction_time].append((reconstructed_longitude, reconstructed_latitude, bathymetry))
 
-    return paleo_bathymetry
+    if output_rift_stretching_factors:
+        return paleo_bathymetry, rift_stretching_factors
+    else:
+        return paleo_bathymetry
 
 
 def _assign_reconstruction_plate_ids(
@@ -1080,15 +1119,48 @@ def _read_grid(
     return output_values
 
 
-def _write_grid(
+def _write_present_day_grid(
+        input,
+        grid_spacing_degrees,
+        grid_filename):
+    """
+    Write the input data to an output grid file.
+
+    Note that the input data should already be uniformly spaced in longitude and latitude.
+    
+    'input' is a list of (longitude, latitude, value) sequences where latitude and longitude are in degrees.
+    'grid_spacing_degrees' is spacing of output grid points in degrees.
+    """
+
+    # Create a multiline string (one line per lon/lat/value row).
+    input_data = ''.join(
+            ' '.join(str(item) for item in row) + '\n' for row in input)
+    
+    # The command-line strings to execute GMT 'xyz2grd'.
+    gmt_command_line = [
+            "gmt",
+            "xyz2grd",
+            "-I{}".format(grid_spacing_degrees),
+            # Use GMT gridline registration since our input point grid has data points on the grid lines.
+            # Gridline registration is the default so we don't need to force pixel registration...
+            # "-r", # Force pixel registration since data points are at centre of cells.
+            "-Rg",
+            # Geographic input/output coordinates...
+            "-fg",
+            "-G{}".format(grid_filename)]
+    
+    call_system_command(gmt_command_line, stdin=input_data)
+
+
+def _write_paleo_bathymetry_grid(
         input,
         grid_spacing_degrees,
         grid_filename,
         xyz_filename=None):
     """
-    Grid the input data and write to an output grid file.
+    Grid the input reconstructed paleobathymetry data and write to an output grid file.
     
-    'input' is a list of (longitude, latitude, value) sequences where latitude and longitude are in degrees.
+    'input' is a list of (longitude, latitude, bathymetry) sequences where latitude and longitude are in degrees.
     'grid_spacing_degrees' is spacing of output grid points in degrees.
     If 'xyz_filename' is specified then an xyz file is also created (from 'input').
     """
@@ -1117,6 +1189,7 @@ def _write_grid(
         # Gridline registration is the default so we don't need to force pixel registration...
         # "-r", # Force pixel registration since data points are at centre of cells.
         "-Rg",
+        # Geographic input/output coordinates...
         "-fg",
         "-G{0}".format(non_nan_mask_filename)]
     
@@ -1155,6 +1228,7 @@ def _write_grid(
         # Gridline registration is the default so we don't need to force pixel registration...
         # "-r", # Force pixel registration since data points are at centre of cells.
         "-Rg",
+        # Geographic input/output coordinates...
         "-fg",
         "-G{0}".format(anti_aliasing_filename)]
     
@@ -1189,7 +1263,7 @@ def _write_grid(
             xyz_file.write(input_data)
 
 
-def _write_grid_multiprocessing(
+def _write_paleo_bathymetry_grid_multiprocessing(
         paleo_bathymetry_and_reconstruction_time,
         grid_spacing,
         grid_file_prefix,
@@ -1203,7 +1277,7 @@ def _write_grid_multiprocessing(
     if output_xyz:
         paleo_bathymetry_xyz_filename, _ = os.path.splitext(paleo_bathymetry_grid_filename)
         paleo_bathymetry_xyz_filename += '.xyz'
-    _write_grid(paleo_bathymetry, grid_spacing, paleo_bathymetry_grid_filename, paleo_bathymetry_xyz_filename)
+    _write_paleo_bathymetry_grid(paleo_bathymetry, grid_spacing, paleo_bathymetry_grid_filename, paleo_bathymetry_xyz_filename)
 
 
 def write_bathymetry_grids(
@@ -1262,7 +1336,7 @@ def write_bathymetry_grids(
             if output_xyz:
                 paleo_bathymetry_xyz_filename, _ = os.path.splitext(paleo_bathymetry_grid_filename)
                 paleo_bathymetry_xyz_filename += '.xyz'
-            _write_grid(paleo_bathymetry_at_reconstruction_time, grid_spacing_degrees, paleo_bathymetry_grid_filename, paleo_bathymetry_xyz_filename)
+            _write_paleo_bathymetry_grid(paleo_bathymetry_at_reconstruction_time, grid_spacing_degrees, paleo_bathymetry_grid_filename, paleo_bathymetry_xyz_filename)
 
     else:  # Use 'multiprocessing' pools to distribute across CPUs...
 
@@ -1282,7 +1356,7 @@ def write_bathymetry_grids(
         with multiprocessing.Pool(num_cpus) as pool:
             pool.map(
                     partial(
-                        _write_grid_multiprocessing,
+                        _write_paleo_bathymetry_grid_multiprocessing,
                         grid_spacing=grid_spacing_degrees,
                         grid_file_prefix=output_file_prefix,
                         output_xyz=output_xyz),
@@ -1316,6 +1390,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         anchor_plate_id=0,
         output_positive_bathymetry_below_sea_level=False,
         output_xyz=False,
+        output_rift_stretching_factor_grid_filename=None,
         use_all_cpus=False):
     # Adding function signature on first line of docstring otherwise Sphinx autodoc will print out
     # the expanded values of the bundle filenames.
@@ -1342,6 +1417,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         anchor_plate_id=0,\
         output_positive_bathymetry_below_sea_level=False,\
         output_xyz=False,\
+        output_rift_stretching_factor_grid_filename=None,\
         use_all_cpus=False)
     Same as :func:`pybacktrack.reconstruct_paleo_bathymetry` but also generates present day input points on a lat/lon grid and
     outputs paleobathymetry as a NetCDF grid for each time step.
@@ -1438,6 +1514,9 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         Whether to also create a GMT xyz file (with ".xyz" extension) for each output paleo bathymetry grid.
         Each row of each xyz file contains "longitude latitude bathymetry".
         Default is to only create grid files (no xyz).
+    output_rift_stretching_factor_grid_filename: string, optional
+        Optional output filename for the rift stretching (beta) factor grid.
+        This will contain the optimal stretching factor at each present day grid point where there is submerged continental crust (not just the areas that are rifting).
     use_all_cpus : bool or int, optional
         If ``False`` (or zero) then use a single CPU.
         If ``True`` then distribute CPU processing across all CPUs (cores).
@@ -1462,12 +1541,16 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         The following changes were made:
 
         - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
-        - Added ``rifting_period`` argument to optionally override rift periods sampled from builtin rift start/end grids.
+        - Added optional ``rifting_period`` argument.
+        - Added optional ``output_rift_stretching_factor_grid_filename`` argument.
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
 
     # Generate a global latitude/longitude grid of points (with the requested grid spacing).
     input_points = generate_lon_lat_points(grid_spacing_degrees)
+
+    # Whether to also output the rift stretching (beta) factors (at each present day grid point).
+    output_rift_stretching_factors=bool(output_rift_stretching_factor_grid_filename)
     
     # Generate reconstructed paleo bathymetry points over the requested time period.
     paleo_bathymetry = reconstruct_backtrack_bathymetry(
@@ -1490,7 +1573,14 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         region_plate_ids=region_plate_ids,
         anchor_plate_id=anchor_plate_id,
         output_positive_bathymetry_below_sea_level=output_positive_bathymetry_below_sea_level,
+        output_rift_stretching_factors=output_rift_stretching_factors,
         use_all_cpus=use_all_cpus)
+    
+    # The return value of 'reconstruct_backtrack_bathymetry()' can be a 2-tuple (adding rift stretching factors).
+    if output_rift_stretching_factors:
+        paleo_bathymetry, rift_stretching_factors = paleo_bathymetry
+        # Generate a NetCDF grid for the rift stretching (beta) factors.
+        _write_present_day_grid(rift_stretching_factors, grid_spacing_degrees, output_rift_stretching_factor_grid_filename)
     
     # Generate a NetCDF grid for each reconstructed time of the paleobathmetry.
     write_bathymetry_grids(
@@ -1794,6 +1884,13 @@ def main():
              'Default is to only create grid files (no xyz).')
     
     parser.add_argument(
+        '-ors', '--output_rift_stretching_factor_grid_filename', type=str,
+        metavar='output_rift_stretching_factor_grid_filename',
+        help='Optional output filename for the rift stretching (beta) factor grid. '
+             'This will contain the optimal stretching factor at each present day grid point where there is submerged continental crust '
+             '(not just the areas that are rifting).')
+    
+    parser.add_argument(
         '--use_all_cpus', nargs='?', type=parse_positive_integer,
         const=True, default=False,
         metavar='NUM_CPUS',
@@ -1875,6 +1972,7 @@ def main():
         anchor_plate_id=args.anchor_plate_id,
         output_positive_bathymetry_below_sea_level=args.output_positive_bathymetry_below_sea_level,
         output_xyz=args.output_xyz,
+        output_rift_stretching_factor_grid_filename=args.output_rift_stretching_factor_grid_filename,
         use_all_cpus=args.use_all_cpus)
 
 

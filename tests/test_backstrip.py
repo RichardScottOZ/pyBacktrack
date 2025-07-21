@@ -91,7 +91,7 @@ def test_backstrip(tmpdir):
         # Ignore user warnings related to well thickness being larger than total sediment thickness.
         warnings.simplefilter("ignore", UserWarning)
         
-        pybacktrack.backstrip_and_write_well(
+        well, decompacted_well = pybacktrack.backstrip_and_write_well(
             str(test_decompacted_output_filename),
             str(input_well_filename),
             lithology_filenames=[pybacktrack.PRIMARY_BUNDLE_LITHOLOGY_FILENAME,

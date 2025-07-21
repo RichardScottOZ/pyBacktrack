@@ -107,10 +107,10 @@ def backstrip_well(
     
     Returns
     -------
-    :class:`pybacktrack.Well`
+    well : :class:`pybacktrack.Well`
         The well read from ``well_filename``.
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
-    list of :class:`pybacktrack.DecompactedWell`
+    decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
         There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
     
@@ -130,7 +130,10 @@ def backstrip_well(
     *min_water_depth* and *max_water_depth* attributes to each decompacted well returned.
 
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        - Now returns tuple (``well``, ``decompacted_wells``). Previously returned nothing.
     """
     
     # Read the lithologies from one or more text files.
@@ -579,6 +582,15 @@ def backstrip_and_write_well(
     ammended_well_output_filename: string, optional
         Amended well data filename. Useful if an extra stratigraphic base unit is added from well bottom to ocean basement.
     
+    Returns
+    -------
+    well : :class:`pybacktrack.Well`
+        The well read from ``well_filename``.
+        It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
+    decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
+        The decompacted wells associated with the well.
+        There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
+    
     Raises
     ------
     ValueError
@@ -595,7 +607,10 @@ def backstrip_and_write_well(
     *min_water_depth* and *max_water_depth* attributes to each decompacted well returned.
 
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        - Now returns tuple (``well``, ``decompacted_wells``). Previously returned nothing.
     """
     
     # Decompact the well.
@@ -632,6 +647,8 @@ def backstrip_and_write_well(
         # Attributes of well object to write to file as metadata...
         well_attributes=well_attributes,
         decompacted_columns=decompacted_columns)
+    
+    return well, decompacted_wells
 
 
 #
