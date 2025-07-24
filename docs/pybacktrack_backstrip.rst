@@ -48,7 +48,7 @@ To backstrip the sunrise drill site (located on shallower *continental* crust), 
     python -m pybacktrack.backstrip_cli \
         -w pybacktrack_examples/example_data/sunrise_lithology.txt \
         -l primary extended \
-        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth min_tectonic_subsidence max_tectonic_subsidence average_tectonic_subsidence min_water_depth max_water_depth average_water_depth lithology \
+        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth min_tectonic_subsidence max_tectonic_subsidence average_tectonic_subsidence min_water_depth max_water_depth average_water_depth paleo_longitude paleo_latitude lithology \
         -slm Haq87_SealevelCurve_Longterm \
         -o sunrise_backstrip_amended.txt \
         -- \
@@ -85,6 +85,8 @@ To backstrip the sunrise drill site (located on shallower *continental* crust), 
                              pybacktrack.BACKSTRIP_COLUMN_MIN_WATER_DEPTH,
                              pybacktrack.BACKSTRIP_COLUMN_MAX_WATER_DEPTH,
                              pybacktrack.BACKSTRIP_COLUMN_AVERAGE_WATER_DEPTH,
+                             pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE,
+                             pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKSTRIP_COLUMN_LITHOLOGY],
         # Might be an extra stratigraphic well layer added from well bottom to ocean basement...
         ammended_well_output_filename=amended_well_output_filename)
@@ -151,9 +153,14 @@ surface stratigraphic layer (whose deposition ends at the specified time) divide
 similar to *decompacted_sediment_rate* in that the stratigraphic layers are fully decompacted (using surface porosity only) as if no portion of any layer had
 ever been buried. It is also similar to *compacted_depth* except all effects of compaction have been removed.
 
-Finally, *average_water_depth* is just the average *min_water_depth* and *max_water_depth*. And *min_tectonic_subsidence*, *max_tectonic_subsidence* and
+The *average_water_depth* column is just the average *min_water_depth* and *max_water_depth*. And *min_tectonic_subsidence*, *max_tectonic_subsidence* and
 *average_tectonic_subsidence* are obtained from *min_water_depth* and *max_water_depth* and *average_water_depth* by adding an isostatic correction of the
 decompacted sediment thickness (to obtain the deeper isostatically compensated, sediment-free water depth also known as tectonic subsidence).
+
+Finally, the *paleo_longitude* and *paleo_latitude* columns contain the reconstructed well location at each *age*.
+The present day well location is assigned a plate ID (using static polygons) and reconstructed back through time (using a rotation model).
+By default, this uses the same static polygons and rotation model used for :ref:`paleobathymetry gridding <pybacktrack_paleo_bathymetry_gridding_procedure>`
+(but you can specify your own).
 
 .. note:: The output columns are specified using the ``-d`` command-line option (run ``python -m pybacktrack.backstrip_cli --help`` to see all options), or
           using the *decompacted_columns* argument of the :func:`pybacktrack.backstrip_and_write_well` function.

@@ -460,6 +460,8 @@ List of column types available for the ``decompacted_columns`` argument of
 :func:`pybacktrack.backtrack_well` and :func:`pybacktrack.backtrack_and_write_well`:
 
 - ``pybacktrack.BACKTRACK_COLUMN_AGE``
+- ``pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE``
+- ``pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE``
 - ``pybacktrack.BACKTRACK_COLUMN_COMPACTED_DEPTH``
 - ``pybacktrack.BACKTRACK_COLUMN_COMPACTED_THICKNESS``
 - ``pybacktrack.BACKTRACK_COLUMN_DECOMPACTED_THICKNESS``
@@ -482,6 +484,8 @@ List of column types available for the ``decompacted_columns`` argument of
 :func:`pybacktrack.backstrip_well` and :func:`pybacktrack.backstrip_and_write_well`:
 
 - ``pybacktrack.BACKSTRIP_COLUMN_AGE``
+- ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE``
+- ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE``
 - ``pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_THICKNESS``
 - ``pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_DENSITY``
 - ``pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_SEDIMENT_RATE``

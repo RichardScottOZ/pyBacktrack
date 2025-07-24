@@ -31,6 +31,7 @@ from pybacktrack.util.call_system_command import call_system_command
 import pybacktrack.version
 from pybacktrack.well import read_well_file, write_well_file, write_well_metadata
 import math
+import pygplates
 import sys
 import warnings
 
@@ -42,6 +43,9 @@ def backstrip_well(
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         sea_level_model=None,
         base_lithology_name=DEFAULT_BASE_LITHOLOGY_NAME,
+        rotation_filenames=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,
+        static_polygon_filename=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,
+        anchor_plate_id=0,
         well_location=None,
         well_bottom_age_column=0,
         well_bottom_depth_column=1,
@@ -57,6 +61,9 @@ def backstrip_well(
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
         sea_level_model=None,\
         base_lithology_name=pybacktrack.DEFAULT_BASE_LITHOLOGY_NAME,\
+        rotation_filenames=pybacktrack.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,\
+        static_polygon_filename=pybacktrack.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,\
+        anchor_plate_id=0,\
         well_location=None,\
         well_bottom_age_column=0,\
         well_bottom_depth_column=1,\
@@ -89,6 +96,16 @@ def backstrip_well(
         The stratigraphic units in the well might not record the full depth of sedimentation.
         The base unit covers the remaining depth from bottom of well to the total sediment thickness.
         Defaults to ``Shale``.
+    rotation_filenames : list of string, optional
+        List of filenames containing rotation features (to reconstruct the well location).
+        If not specified then defaults to the built-in global rotations associated with the topological model
+        used to generate the built-in rift start/end time grids.
+    static_polygon_filename : string, optional
+        Filename containing static polygon features (to assign a plate ID to the well location).
+        If not specified then defaults to the built-in static polygons associated with the topological model
+        used to generate the built-in rift start/end time grids.
+    anchor_plate_id : int, optional
+        The anchor plate id used when reconstructing the well location. Defaults to zero.
     well_location : tuple, optional
         Optional location of well.
         If not provided then is extracted from the ``well_filename`` file.
@@ -132,6 +149,8 @@ def backstrip_well(
     .. versionchanged:: 1.5
         The following changes were made:
 
+        - Added optional ``rotation_filenames``, ``static_polygon_filename`` and ``anchor_plate_id`` arguments for reconstructing the
+          present day well location through time (as new :attr:`DecompactedWell.paleo_longitude` and :attr:`DecompactedWell.paleo_latitude` attributes).
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
         - Now returns tuple (``well``, ``decompacted_wells``). Previously returned nothing.
     """
@@ -260,6 +279,36 @@ def backstrip_well(
             decompacted_well.sea_level = sea_level.get_average_level(
                 decompacted_well.surface_unit.bottom_age,
                 decompacted_well.surface_unit.top_age)
+
+    # Present day well location and rotation model for reconstructing its position through time.
+    present_day_well_location = pygplates.PointOnSphere(well.latitude, well.longitude)
+    rotation_model = pygplates.RotationModel(rotation_filenames)
+    
+    # Find the plate ID of the static polygon containing the well location (or anchor plate if not in any plates).
+    #
+    plate_partitioner = pygplates.PlatePartitioner(static_polygon_filename, rotation_model)
+    plate_containing_well_location = plate_partitioner.partition_point(present_day_well_location)
+    if plate_containing_well_location:
+        well_reconstruction_plate_id = plate_containing_well_location.get_feature().get_reconstruction_plate_id()
+    else:
+        # Shouldn't really get here if static polygons have global coverage at present day.
+        well_reconstruction_plate_id = anchor_plate_id
+    
+    # Reconstruct the present day location of the well to the age of each decompacted well (the top age of its surface unit).
+    # And add as 'paleo_longitude' and 'paleo_latitude' attributes of each decompacted well.
+    #
+    for decompacted_well in decompacted_wells:
+        # The current decompaction time (age of the surface of the current decompacted column of the well).
+        well_decompaction_time = decompacted_well.get_age()
+        # Get rotation from present day to current decompaction time using the reconstruction plate ID of the well location.
+        #
+        # NOTE: We specify 'from_time=0' since there could be a non-zero finite rotation at present day (generally there shouldn't be) and
+        #       we don't want our present day well location to move when 'well_decompaction_time' is zero (or have this offset for non-zero times).
+        rotation = rotation_model.get_rotation(well_decompaction_time, well_reconstruction_plate_id, from_time=0, anchor_plate_id=anchor_plate_id)
+        # Reconstruct well location to current decompaction time.
+        reconstructed_well_location = rotation * present_day_well_location
+        # Store reconstructed well location as attributes in the current decompacted well.
+        decompacted_well.paleo_latitude, decompacted_well.paleo_longitude = reconstructed_well_location.to_lat_lon()
     
     return well, decompacted_wells
 
@@ -299,6 +348,8 @@ COLUMN_LITHOLOGY = 10
 COLUMN_COMPACTED_DEPTH = 11
 COLUMN_DECOMPACTED_SEDIMENT_RATE = 12
 COLUMN_DECOMPACTED_DEPTH = 13
+COLUMN_PALEO_LONGITUDE = 14
+COLUMN_PALEO_LATITUDE = 15
 
 _DECOMPACTED_COLUMNS_DICT = {
     'age': COLUMN_AGE,
@@ -314,7 +365,9 @@ _DECOMPACTED_COLUMNS_DICT = {
     'lithology': COLUMN_LITHOLOGY,
     'compacted_depth': COLUMN_COMPACTED_DEPTH,
     'decompacted_sediment_rate': COLUMN_DECOMPACTED_SEDIMENT_RATE,
-    'decompacted_depth': COLUMN_DECOMPACTED_DEPTH}
+    'decompacted_depth': COLUMN_DECOMPACTED_DEPTH,
+    'paleo_longitude': COLUMN_PALEO_LONGITUDE,
+    'paleo_latitude': COLUMN_PALEO_LATITUDE}
 _DECOMPACTED_COLUMN_NAMES_DICT = dict([(v, k) for k, v in _DECOMPACTED_COLUMNS_DICT.items()])
 _DECOMPACTED_COLUMN_NAMES = sorted(_DECOMPACTED_COLUMNS_DICT.keys())
 
@@ -358,6 +411,10 @@ def write_well(
         Available columns are:
         
         * pybacktrack.BACKSTRIP_COLUMN_AGE
+        * pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE
+        * pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE
+        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_THICKNESS
+        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_THICKNESS
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_DENSITY
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_SEDIMENT_RATE
@@ -368,9 +425,7 @@ def write_well(
         * pybacktrack.BACKSTRIP_COLUMN_AVERAGE_WATER_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_MIN_WATER_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_MAX_WATER_DEPTH
-        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_THICKNESS
         * pybacktrack.BACKSTRIP_COLUMN_LITHOLOGY
-        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_DEPTH
     
     Raises
     ------
@@ -382,7 +437,10 @@ def write_well(
     Notes
     -----
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - Added ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE`` and ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE`` to available columns for ``decompacted_columns``.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
     
     # If 'COLUMN_LITHOLOGY' is specified then it must be the last column.
@@ -432,6 +490,10 @@ def write_well(
                 
                 if decompacted_column == COLUMN_AGE:
                     column_str = column_float_format_string.format(decompacted_well.get_age(), width=column_width)
+                elif decompacted_column == COLUMN_PALEO_LONGITUDE:
+                    column_str = column_float_format_string.format(decompacted_well.paleo_longitude, width=column_width)
+                elif decompacted_column == COLUMN_PALEO_LATITUDE:
+                    column_str = column_float_format_string.format(decompacted_well.paleo_latitude, width=column_width)
                 elif decompacted_column == COLUMN_DECOMPACTED_THICKNESS:
                     column_str = column_float_format_string.format(decompacted_well.total_decompacted_thickness, width=column_width)
                 elif decompacted_column == COLUMN_DECOMPACTED_DENSITY:
@@ -490,6 +552,9 @@ def backstrip_and_write_well(
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
         sea_level_model=None,
         base_lithology_name=DEFAULT_BASE_LITHOLOGY_NAME,
+        rotation_filenames=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,
+        static_polygon_filename=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,
+        anchor_plate_id=0,
         decompacted_columns=DEFAULT_DECOMPACTED_COLUMNS,
         well_location=None,
         well_bottom_age_column=0,
@@ -508,6 +573,9 @@ def backstrip_and_write_well(
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
         sea_level_model=None,\
         base_lithology_name=pybacktrack.DEFAULT_BASE_LITHOLOGY_NAME,\
+        rotation_filenames=pybacktrack.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,\
+        static_polygon_filename=pybacktrack.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,\
+        anchor_plate_id=0,\
         decompacted_columns=DEFAULT_DECOMPACTED_COLUMNS,\
         well_location=None,\
         well_bottom_age_column=0,\
@@ -544,12 +612,26 @@ def backstrip_and_write_well(
         The stratigraphic units in the well might not record the full depth of sedimentation.
         The base unit covers the remaining depth from bottom of well to the total sediment thickness.
         Defaults to ``Shale``.
+    rotation_filenames : list of string, optional
+        List of filenames containing rotation features (to reconstruct the well location).
+        If not specified then defaults to the built-in global rotations associated with the topological model
+        used to generate the built-in rift start/end time grids.
+    static_polygon_filename : string, optional
+        Filename containing static polygon features (to assign a plate ID to the well location).
+        If not specified then defaults to the built-in static polygons associated with the topological model
+        used to generate the built-in rift start/end time grids.
+    anchor_plate_id : int, optional
+        The anchor plate id used when reconstructing the well location. Defaults to zero.
     decompacted_columns : list of columns, optional
         The decompacted columns (and their order) to output to ``decompacted_wells_filename``.
         
         Available columns are:
         
         * pybacktrack.BACKSTRIP_COLUMN_AGE
+        * pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE
+        * pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE
+        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_THICKNESS
+        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_THICKNESS
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_DENSITY
         * pybacktrack.BACKSTRIP_COLUMN_DECOMPACTED_SEDIMENT_RATE
@@ -560,9 +642,7 @@ def backstrip_and_write_well(
         * pybacktrack.BACKSTRIP_COLUMN_AVERAGE_WATER_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_MIN_WATER_DEPTH
         * pybacktrack.BACKSTRIP_COLUMN_MAX_WATER_DEPTH
-        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_THICKNESS
         * pybacktrack.BACKSTRIP_COLUMN_LITHOLOGY
-        * pybacktrack.BACKSTRIP_COLUMN_COMPACTED_DEPTH
     
     well_location : tuple, optional
         Optional location of well.
@@ -609,6 +689,9 @@ def backstrip_and_write_well(
     .. versionchanged:: 1.5
         The following changes were made:
 
+        - Added optional ``rotation_filenames``, ``static_polygon_filename`` and ``anchor_plate_id`` arguments for reconstructing the
+          present day well location through time (as new :attr:`DecompactedWell.paleo_longitude` and :attr:`DecompactedWell.paleo_latitude` attributes).
+        - Added ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE`` and ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE`` to available columns for ``decompacted_columns``.
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
         - Now returns tuple (``well``, ``decompacted_wells``). Previously returned nothing.
     """
@@ -620,6 +703,9 @@ def backstrip_and_write_well(
         total_sediment_thickness_filename=total_sediment_thickness_filename,
         sea_level_model=sea_level_model,
         base_lithology_name=base_lithology_name,
+        rotation_filenames=rotation_filenames,
+        static_polygon_filename=static_polygon_filename,
+        anchor_plate_id=anchor_plate_id,
         well_location=well_location,
         well_bottom_age_column=well_bottom_age_column,
         well_bottom_depth_column=well_bottom_depth_column,
@@ -799,6 +885,30 @@ def main():
              'Overrides well file if both specified. '
              'Longitude and latitude are in degrees.')
     
+    # Allow user to override default rotation filenames (used to reconstruct the well location).
+    #
+    # Defaults to built-in global rotations associated with topological model used to generate built-in rift start/end time grids.
+    parser.add_argument(
+        '-r', '--rotation_filenames', type=str, nargs='+',
+        default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,
+        metavar='rotation_filename',
+        help='R|One or more rotation files (to reconstruct the well location).\n'
+             'Defaults to the bundled global rotations (associated with topological model used to generate built-in rift start/end time grids):\n'
+             '{}.'
+             .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES))
+    
+    # Allow user to override default static polygon filename (to assign a plate ID to the well location).
+    #
+    # Defaults to built-in static polygons associated with topological model used to generate built-in rift start/end time grids.
+    parser.add_argument(
+        '-p', '--static_polygon_filename', type=str,
+        default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,
+        metavar='static_polygon_filename',
+        help='R|File containing static polygons (to assign a plate ID to the well location).\n'
+             'Defaults to the bundled static polygons (associated with topological model used to generate built-in rift start/end time grids):\n'
+             '"{}".'
+             .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME))
+    
     def parse_non_negative_integer(value_string):
         try:
             value = int(value_string)
@@ -809,6 +919,10 @@ def main():
             raise argparse.ArgumentTypeError("%g is a negative number" % value)
         
         return value
+    
+    parser.add_argument('--anchor', type=parse_non_negative_integer, default=0,
+            dest='anchor_plate_id',
+            help='Anchor plate id used to reconstruct the well location. Defaults to zero.')
     
     parser.add_argument(
         '-c', '--well_columns', type=parse_non_negative_integer, nargs=5, default=[0, 1, 2, 3, 4],
@@ -927,6 +1041,9 @@ def main():
         total_sediment_thickness_filename=total_sediment_thickness_filename,
         sea_level_model=sea_level_model,
         base_lithology_name=args.base_lithology_name,
+        rotation_filenames=args.rotation_filenames,
+        static_polygon_filename=args.static_polygon_filename,
+        anchor_plate_id=args.anchor_plate_id,
         decompacted_columns=decompacted_columns,
         well_location=args.well_location,
         well_bottom_age_column=args.well_columns[0],

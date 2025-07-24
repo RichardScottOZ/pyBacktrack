@@ -375,7 +375,7 @@ The backtracking example can now be demonstrated by running the script as:
 
     python -m pybacktrack.backtrack_cli \
         -w pybacktrack_examples/example_data/ODP-114-699-Lithology.txt \
-        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth dynamic_topography water_depth tectonic_subsidence lithology \
+        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth dynamic_topography water_depth tectonic_subsidence paleo_longitude paleo_latitude lithology \
         -ym M2 \
         -slm Haq87_SealevelCurve_Longterm \
         -o ODP-114-699_backtrack_amended.txt \
@@ -419,6 +419,8 @@ The following Python code does the same as the :ref:`built-in script<pybacktrack
                              pybacktrack.BACKTRACK_COLUMN_DYNAMIC_TOPOGRAPHY,
                              pybacktrack.BACKTRACK_COLUMN_WATER_DEPTH,
                              pybacktrack.BACKTRACK_COLUMN_TECTONIC_SUBSIDENCE,
+                             pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE,
+                             pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKTRACK_COLUMN_LITHOLOGY],
         # Might be an extra stratigraphic well layer added from well bottom to ocean basement...
         ammended_well_output_filename=amended_well_output_filename)

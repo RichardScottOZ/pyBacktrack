@@ -789,6 +789,16 @@ class DecompactedWell(object):
     
     Attributes
     ----------
+    paleo_longitude : float
+        Longitude of the well location reconstructed to the :meth:`age <get_age>` of the surface of this decompacted well (in degrees).
+        
+        .. versionadded:: 1.5
+        
+    paleo_latitude : float
+        Latitude of the well location reconstructed to the :meth:`age <get_age>` of the surface of this decompacted well (in degrees).
+        
+        .. versionadded:: 1.5
+        
     surface_unit : :class:`pybacktrack.StratigraphicUnit`
         Top stratigraphic unit in this decompacted well.
     total_compacted_thickness : float

@@ -48,7 +48,7 @@ For example, revisiting our :ref:`backtracking example <pybacktrack_a_backtracki
 
     python -m pybacktrack.backtrack_cli \
         -w pybacktrack_examples/example_data/ODP-114-699-Lithology.txt \
-        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth dynamic_topography water_depth tectonic_subsidence lithology \
+        -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth dynamic_topography water_depth tectonic_subsidence paleo_longitude paleo_latitude lithology \
         -ym M2 \
         -slm Haq87_SealevelCurve_Longterm \
         -o ODP-114-699_backtrack_amended.txt \
@@ -83,6 +83,8 @@ For example, revisiting our :ref:`backtracking example <pybacktrack_a_backtracki
                              pybacktrack.BACKTRACK_COLUMN_DYNAMIC_TOPOGRAPHY,
                              pybacktrack.BACKTRACK_COLUMN_WATER_DEPTH,
                              pybacktrack.BACKTRACK_COLUMN_TECTONIC_SUBSIDENCE,
+                             pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE,
+                             pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKTRACK_COLUMN_LITHOLOGY],
         # Might be an extra stratigraphic well layer added from well bottom to ocean basement...
         ammended_well_output_filename=amended_well_output_filename)
@@ -118,7 +120,7 @@ The amended drill site output file:
 
 There is an extra :ref:`base sediment layer <pybacktrack_base_sediment_layer>` that extends from the bottom
 of the drill site (516.3 metres) to the total sediment thickness (601 metres).
-The bottom age of this new base layer (86.79 Ma) is the age of oceanic crust that ODP drill site 699 is on.
+The bottom age of this new base layer (79.133 Ma) is the age of oceanic crust that ODP drill site 699 is on.
 If it had been on continental crust (near a passive margin such as DSDP drill site 327) then
 the bottom age of this new base layer would have been when rifting started
 (since we would have assumed deposition began when continental stretching began).
@@ -150,10 +152,15 @@ At each time it is calculated as the fully decompacted thickness (ie, using surf
 (whose deposition ends at the specified time) divided by the layer's deposition time interval. The *decompacted_depth* column is similar to
 *decompacted_sediment_rate* in that the stratigraphic layers are fully decompacted (using surface porosity only) as if no portion of any layer had
 ever been buried. It is also similar to *compacted_depth* except all effects of compaction have been removed.
-The *dynamic_topography* column is the dynamic topography elevation relative to present day (or zero if no dynamic topography model was specified).
 
-Finally, *tectonic_subsidence* is the output of the underlying :ref:`tectonic subsidence model <pybacktrack_backtrack_oceanic_and_continental_subsidence>`,
+The *dynamic_topography* column is the dynamic topography elevation relative to present day (or zero if no dynamic topography model was specified).
+The *tectonic_subsidence* column is the output of the underlying :ref:`tectonic subsidence model <pybacktrack_backtrack_oceanic_and_continental_subsidence>`,
 and *water_depth* is obtained from tectonic subsidence by subtracting an isostatic correction of the decompacted sediment thickness.
+
+Finally, the *paleo_longitude* and *paleo_latitude* columns contain the reconstructed well location at each *age*.
+The present day well location is assigned a plate ID (using static polygons) and reconstructed back through time (using a rotation model).
+By default, this uses the same static polygons and rotation model used for :ref:`paleobathymetry gridding <pybacktrack_paleo_bathymetry_gridding_procedure>`
+(but you can specify your own).
 
 .. note:: The output columns are specified using the ``-d`` command-line option (run ``python -m pybacktrack.backtrack_cli --help`` to see all options), or
           using the *decompacted_columns* argument of the :func:`pybacktrack.backtrack_and_write_well` function.

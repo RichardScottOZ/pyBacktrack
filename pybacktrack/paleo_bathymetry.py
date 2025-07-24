@@ -46,7 +46,6 @@ import pybacktrack.version
 from pybacktrack.well import Well
 import pygplates
 import sys
-import warnings
 
 
 # Default name of the lithology of all sediment (the total sediment thickness at all sediment locations
@@ -1619,6 +1618,17 @@ def main():
             raise argparse.ArgumentTypeError("%g is not a positive integer" % value)
         
         return value
+
+    def parse_non_negative_integer(value_string):
+        try:
+            value = int(value_string)
+        except ValueError:
+            raise argparse.ArgumentTypeError("%s is not an integer" % value_string)
+        
+        if value < 0:
+            raise argparse.ArgumentTypeError("%g is a negative number" % value)
+        
+        return value
         
     def parse_positive_float(value_string):
         try:
@@ -1694,7 +1704,7 @@ def main():
             help='The grid spacing (in minutes) of sample points in lon/lat space. '
                  'Defaults to {0} minutes.'.format(DEFAULT_GRID_SPACING_MINUTES))
     
-    parser.add_argument('--anchor', type=parse_positive_integer, default=0,
+    parser.add_argument('--anchor', type=parse_non_negative_integer, default=0,
             dest='anchor_plate_id',
             help='Anchor plate id used when reconstructing paleobathymetry grid points. Defaults to zero.')
     
