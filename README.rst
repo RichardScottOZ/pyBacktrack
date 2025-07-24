@@ -1,8 +1,14 @@
 PyBacktrack
 ===========
 
-.. image:: https://img.shields.io/pypi/v/pybacktrack.svg
-   :target: https://pypi.python.org/pypi/pybacktrack/
+.. image:: https://img.shields.io/pypi/v/pybacktrack?label=pyBacktrack
+   :target: https://pypi.org/project/pybacktrack
+
+.. image:: https://img.shields.io/pypi/dm/pybacktrack?label=PyPI%20downloads
+   :target: https://pypistats.org/packages/pybacktrack
+
+.. image:: https://img.shields.io/conda/dn/conda-forge/pybacktrack?label=Conda%20downloads
+   :target: https://anaconda.org/conda-forge/pybacktrack
 
 .. image:: https://img.shields.io/docker/pulls/earthbyte/pybacktrack.svg
    :target: https://hub.docker.com/r/earthbyte/pybacktrack
