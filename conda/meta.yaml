@@ -6,21 +6,22 @@ package:
   version: {{ version }}
 
 source:
-  url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
+  url: "https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
   sha256: 6277fc5263e2a38c1c472435fea612fa9fb7923a14ba33b4dc30ba2e984411e7
 
 build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
-  number: 0
+  number: 1
 
 requirements:
   host:
-    - python >=3.5
+    - python {{ python_min }}
     - pytest-runner
     - pip
+    - setuptools
   run:
-    - python >=3.5
+    - python >={{ python_min }}
     - gmt >=5.0.0
     - numpy
     - pygplates
@@ -33,13 +34,14 @@ test:
     - pip check
   requires:
     - pip
+    - python {{ python_min }}
 
 about:
   home: https://github.com/EarthByte/pyBacktrack
   summary: A tool for reconstructing paleobathymetry on oceanic and continental crust.
   dev_url: https://github.com/EarthByte/pyBacktrack
   doc_url: https://pybacktrack.readthedocs.io
-  license: GPL-2.0-or-later
+  license: GPL-2.0-only
   license_family: GPL2
   license_file: LICENSE
 
