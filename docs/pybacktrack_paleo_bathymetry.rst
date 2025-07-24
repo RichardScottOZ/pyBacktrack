@@ -123,6 +123,8 @@ Each grid point has a single lithology, with an initial compacted thickness samp
           This differs from the :ref:`base lithology of drill sites <pybacktrack_base_sediment_layer>` where the undrilled portions of drill sites are usually below the
           Carbonate Compensation Depth (CCD) where shale dominates. Note that you can override the default lithology by specifying the ``-b`` command-line option.
 
+.. note:: In pyBacktrack versions ``1.4`` and older, the single lithology defaulted to ``Shale`` (not ``Average_ocean_floor_sediment``).
+
 The decompaction progresses incrementally (eg, in 1 Myr intervals) assuming a constant (average) decompacted sedimentation rate over the entire sedimentation period calculated as the fully decompacted initial thickness
 (ie, using surface porosity only) divided by the sedimentation period (from start of rifting for continental crust, and from crustal age for oceanic crust, to present day).
 Loading each reconstructed point’s decompacted thicknesses onto its modelled tectonic subsidence (oceanic or continental) back through time, along with the effects of dynamic topography and sea level models, reveals its history of water depths.
