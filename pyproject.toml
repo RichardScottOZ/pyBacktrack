@@ -1,0 +1,40 @@
+[build-system]
+requires      = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pybacktrack"
+dynamic = ["version"]
+description = "A tool for reconstructing paleobathymetry on oceanic and continental crust."
+readme = "README.rst"
+authors = [{ name = "John Cannon", email = "john.cannon@sydney.edu.au" }]
+license-files = ["LICENSE"]
+requires-python = ">=3.8"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+keywords = ["bathymetry", "backtrack", "backstrip", "rift", "subsidence", "tectonic"]
+dependencies = ["numpy", "scipy", "pygplates", "setuptools"]
+
+[project.urls]
+Homepage = "https://github.com/EarthByte/pyBacktrack"
+Documentation = "http://pybacktrack.readthedocs.io"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages=["pybacktrack", "pybacktrack.util"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pybacktrack.version.__version__"}
