@@ -28,22 +28,23 @@ classifiers = [
 ]
 keywords = ["bathymetry", "backtrack", "backstrip", "rift", "subsidence", "tectonic"]
 dependencies = ["numpy", "scipy", "pygplates", "setuptools"]
-
-[project.urls]
-Homepage = "https://github.com/EarthByte/pyBacktrack"
-Documentation = "http://pybacktrack.readthedocs.io"
-
-[project.optional-dependencies]
-dev = ["pytest"]
+urls.Homepage = "https://github.com/EarthByte/pyBacktrack"
+urls.Documentation = "http://pybacktrack.readthedocs.io"
+optional-dependencies.dev = ["pytest"]
 
 [tool.setuptools]
-# Enable use of 'MANIFEST.in'.
+# Help setuptools to look only at the 'pybacktrack' package (so doesn't think other top-level dirs are packages).
+packages.find.include = ["pybacktrack*"]
+# Ensure embedded *data* folders are found (they look like namespace packages, ie, no '__init__.py' in folder).
+packages.find.namespaces = true
+# Include package data in the *wheel*.
+#
+# "setuptools-scm" and 'MANIFEST.in' determine what data files go in the *sdist*.
+# And "include-package-data=true" also includes them in the *wheel*,
+# but only those *inside* the package directory tree ('pybacktrack*') by default.
+#
+# Note: "setuptools-scm" restricts to git-tracked files.
+#       'MANIFEST.in' excludes some git-tracked files included by "setuptools-scm".
 include-package-data = true
-
-[tool.setuptools.packages.find]
-include = ["pybacktrack*"]
-# Ensure embedded *data* folders are found (they look like namespace packages).
-namespaces = true
-
-[tool.setuptools.dynamic]
-version = {attr = "pybacktrack.version.__version__"}
+# Load the 'pybacktrack.version' module and get its '__version__' attribute.
+dynamic.version = {attr = "pybacktrack.version.__version__"}
