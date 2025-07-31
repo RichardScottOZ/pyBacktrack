@@ -27,7 +27,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 keywords = ["bathymetry", "backtrack", "backstrip", "rift", "subsidence", "tectonic"]
-dependencies = ["numpy", "scipy", "pygplates", "setuptools"]
+dependencies = ["numpy", "scipy", "pygplates"]
 urls.Homepage = "https://github.com/EarthByte/pyBacktrack"
 urls.Documentation = "http://pybacktrack.readthedocs.io"
 optional-dependencies.dev = ["pytest"]

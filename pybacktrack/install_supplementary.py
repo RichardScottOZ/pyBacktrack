@@ -16,9 +16,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import os.path
-import pkg_resources
-from distutils import dir_util
+from importlib import resources
+from pathlib import Path
+import shutil
 
 
 def install(
@@ -32,9 +32,12 @@ def install(
     is chosen to make collision less likely / problematic.
     """
 
-    supplementary_src_path = pkg_resources.resource_filename('pybacktrack', 'supplementary')
-    supplementary_dest_path = dest_path
-
-    # The distutils.dir_util.copy_tree function works very similarly to shutil.copytree except that
-    # dir_util.copy_tree will just overwrite a directory that exists instead of raising an exception.
-    dir_util.copy_tree(supplementary_src_path, supplementary_dest_path, preserve_mode=1, preserve_times=1, preserve_symlinks=1, update=0, verbose=1, dry_run=0)
+    # Copy the supplementary.
+    with resources.path('pybacktrack', 'supplementary') as src_path:
+        # Copy source to destination.
+        #
+        # Note: Python 3.8 added the 'dirs_exist_ok' argument to 'shutil.copytree()' which, when True,
+        #       will just overwrite a directory that exists instead of raising an exception.
+        #       This makes 'shutil.copytree()' equivalent to 'distutils.dir_util.copy_tree'
+        #       (where 'distutils' was in the Python standard library but was removed in Python 3.12).
+        shutil.copytree(src_path, dest_path, dirs_exist_ok=True)

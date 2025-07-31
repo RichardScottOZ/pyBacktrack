@@ -16,9 +16,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import os.path
-import pkg_resources
-from distutils import dir_util
+from importlib import resources
+from pathlib import Path
+import shutil
 
 
 def install(
@@ -30,15 +30,17 @@ def install(
     is chosen to make collision less likely / problematic.
     """
 
-    # The example data source and destination paths.
-    example_data_src_path = pkg_resources.resource_filename('pybacktrack', 'example_data')
-    example_data_dest_path = os.path.join(dest_path, 'example_data')
+    def copy_tree(src_path_in_pybacktrack):
+        with resources.path('pybacktrack', src_path_in_pybacktrack) as src_path:
+            # Copy source to destination.
+            #
+            # Note: Python 3.8 added the 'dirs_exist_ok' argument to 'shutil.copytree()' which, when True,
+            #       will just overwrite a directory that exists instead of raising an exception.
+            #       This makes 'shutil.copytree()' equivalent to 'distutils.dir_util.copy_tree'
+            #       (where 'distutils' was in the Python standard library but was removed in Python 3.12).
+            shutil.copytree(src_path, Path(dest_path) / src_path_in_pybacktrack, dirs_exist_ok=True)
 
-    # The notebooks are the examples.
-    notebooks_src_path = pkg_resources.resource_filename('pybacktrack', 'notebooks')
-    notebooks_dest_path = os.path.join(dest_path, 'notebooks')
-
-    # The distutils.dir_util.copy_tree function works very similarly to shutil.copytree except that
-    # dir_util.copy_tree will just overwrite a directory that exists instead of raising an exception.
-    dir_util.copy_tree(example_data_src_path, example_data_dest_path, preserve_mode=1, preserve_times=1, preserve_symlinks=1, update=0, verbose=1, dry_run=0)
-    dir_util.copy_tree(notebooks_src_path, notebooks_dest_path, preserve_mode=1, preserve_times=1, preserve_symlinks=1, update=0, verbose=1, dry_run=0)
+    # Copy the example data.
+    copy_tree('example_data')
+    # Copy the notebooks.
+    copy_tree('notebooks')
