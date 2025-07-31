@@ -1,5 +1,8 @@
 [build-system]
-requires      = ["setuptools>=61.0.0"]
+requires = [
+    "setuptools>=61.0.0",  # setuptools 61.0 fully embraces 'pyproject.toml' configuration
+    "setuptools-scm"  # when installed it automatically includes all git-tracked files into our source distribution
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -34,7 +37,13 @@ Documentation = "http://pybacktrack.readthedocs.io"
 dev = ["pytest"]
 
 [tool.setuptools]
-packages=["pybacktrack", "pybacktrack.util"]
+# Enable use of 'MANIFEST.in'.
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["pybacktrack*"]
+# Ensure embedded *data* folders are found (they look like namespace packages).
+namespaces = true
 
 [tool.setuptools.dynamic]
 version = {attr = "pybacktrack.version.__version__"}

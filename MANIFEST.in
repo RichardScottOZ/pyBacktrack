@@ -1,9 +1,2 @@
-include README.rst
-include LICENSE
-recursive-include pybacktrack/bundle_data *
-recursive-include pybacktrack/example_data *
-recursive-include pybacktrack/notebooks *
-recursive-include pybacktrack/supplementary *
-recursive-include tests *
-prune pybacktrack/notebooks/.ipynb_checkpoints
-prune tests/__pycache__
+# We only use 'MANIFEST.in' to exclude some git-tracked files included by "setuptools-scm" (see 'pyproject.toml').
+exclude .gitattributes .gitignore .readthedocs.yaml
