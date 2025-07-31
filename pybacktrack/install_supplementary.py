@@ -16,7 +16,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-from importlib import resources
+# If 'importlib_resources' installed then use that, otherwise use standard library 'importlib.resources'.
+#
+# Support for accessing *namespace* packages only added in Python 3.10 (to 'importlib.resources').
+# For Python 3.9 must instead use (and install) backport PyPI package 'importlib_resources'.
+try:
+    import importlib_resources as resources
+except:
+    from importlib import resources
 from pathlib import Path
 import shutil
 

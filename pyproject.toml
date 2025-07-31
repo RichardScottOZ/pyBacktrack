@@ -27,7 +27,13 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 keywords = ["bathymetry", "backtrack", "backstrip", "rift", "subsidence", "tectonic"]
-dependencies = ["numpy", "scipy", "pygplates"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pygplates",
+    # Support for accessing *namespace* packages only added in Python 3.10 (to 'importlib.resources').
+    # For Python 3.9 must instead use backport PyPI package 'importlib_resources'.
+    "importlib_resources;python_version<'3.10'"]
 urls.Homepage = "https://github.com/EarthByte/pyBacktrack"
 urls.Documentation = "http://pybacktrack.readthedocs.io"
 optional-dependencies.dev = ["pytest"]
