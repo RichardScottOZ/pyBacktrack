@@ -60,3 +60,6 @@ packages.find.namespaces = true
 include-package-data = true
 # Load the 'pybacktrack.version' module and get its '__version__' attribute.
 dynamic.version = {attr = "pybacktrack.version.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
