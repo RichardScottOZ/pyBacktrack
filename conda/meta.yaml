@@ -1,8 +1,8 @@
 {% set name = "pybacktrack" %}
-{% set version = "1.4.0" %}
+{% set version = "1.5.0" %}
 
 package:
-  name: {{ name }}
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
@@ -17,9 +17,7 @@ build:
 requirements:
   host:
     - python {{ python_min }}
-    - pytest-runner
     - pip
-    - setuptools
   run:
     - python >={{ python_min }}
     - gmt >=5.0.0
@@ -28,13 +26,14 @@ requirements:
     - scipy
 
 test:
+  source_files:
+    - tests
   imports:
     - pybacktrack
-  commands:
-    - pip check
   requires:
-    - pip
-    - python {{ python_min }}
+    - pytest
+  commands:
+    - pytest
 
 about:
   home: https://github.com/EarthByte/pyBacktrack
