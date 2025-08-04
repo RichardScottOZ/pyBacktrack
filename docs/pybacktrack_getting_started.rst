@@ -201,7 +201,7 @@ If you already have ``pybacktrack`` installed and would like to upgrade to the l
 To install the latest development version (requires Git on local system), run:
 ::
 
-  python -m pip install "git+https://github.com/EarthByte/pyBacktrack.git#egg=pybacktrack"
+  python -m pip install "git+https://github.com/EarthByte/pyBacktrack.git"
 
 .. note:: | You may need to update your `Git` if you receive an error ending with ``tlsv1 alert protocol version``.
           | This is apparently due to an `update on GitHub <https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed>`_.
