@@ -140,14 +140,14 @@ BUNDLE_LITHOLOGY_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_stratigraphy.htm
 BUNDLE_AGE_GRID_FILENAME = os.path.join(BUNDLE_PATH, 'age', 'agegrid_6m.nc')
 BUNDLE_AGE_GRID_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_backtrack.html#pybacktrack-bundled-age-grid'
 
-BUNDLE_RIFTING_START_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'rift_start_grid.nc')
-BUNDLE_RIFTING_END_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'rift_end_grid.nc')
+BUNDLE_RIFTING_START_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'rift_start_grid.nc')
+BUNDLE_RIFTING_END_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'rift_end_grid.nc')
 BUNDLE_RIFTING_GRIDS_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_paleo_bathymetry.html#pybacktrack-builtin-rift-gridding-procedure'
 
-BUNDLE_TRENCHES_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'trenches.gpmlz')
-BUNDLE_SUBDUCTING_BOUNDARIES_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'subducting_boundaries.gpmlz')
-BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES = [os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'rotations_250-0Ma.rot')]
-BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', '2019_v2', 'static_polygons.shp')
+BUNDLE_TRENCHES_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'trenches.gpmlz')
+BUNDLE_SUBDUCTING_BOUNDARIES_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'subducting_boundaries.gpmlz')
+BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES = [os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'CombinedRotations.rot')]
+BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME = os.path.join(BUNDLE_PATH, 'reconstruction', 'Z22', 'static_polygons.shp')
 BUNDLE_PALEOBATHYMETRY_GRIDDING_DOC_URL = BUNDLE_DOC_URL_PREFIX + 'pybacktrack_paleo_bathymetry.html#pybacktrack-paleo-bathymetry-gridding-procedure'
 
 BUNDLE_AGE_TO_DEPTH_MODEL_RHCW18_FILENAME = os.path.join(BUNDLE_PATH, 'ocean_age_to_depth', 'RHCW18', 'depth-1333-130-2500.dat')
