@@ -23,7 +23,10 @@ import multiprocessing
 import os.path
 import pybacktrack
 import pygplates
-from ptt.utils import proximity_query
+try:
+    from ptt.utils import proximity_query
+except ImportError:
+    from gplately.ptt.utils import proximity_query
 import sys
 
 
@@ -31,9 +34,9 @@ import sys
 # Need version 31 to be able to reconstruct 'using topologies' (and to enable strain rate clamping).
 PYGPLATES_VERSION_REQUIRED = pygplates.Version(31)
 
-# Default to the 2019 v2 deforming model (in 'deforming_model/2019_v2/' sub-directory).
-DEFAULT_DEFORMING_MODEL_TOPOLOGY_FILES = os.path.join('deforming_model', '2019_v2', 'topology_files.txt')
-DEFAULT_DEFORMING_MODEL_ROTATION_FILES = os.path.join('deforming_model', '2019_v2', 'rotation_files.txt')
+# Default to the Zahirovic et al. (2022) deforming model (in 'deforming_model/Z22/' sub-directory).
+DEFAULT_DEFORMING_MODEL_TOPOLOGY_FILES = os.path.join('deforming_model', 'Z22', 'topology_files.txt')
+DEFAULT_DEFORMING_MODEL_ROTATION_FILES = os.path.join('deforming_model', 'Z22', 'rotation_files.txt')
 # We only go back to 250Ma. Rifting since Pangea began at 240Ma.
 DEFAULT_OLDEST_RIFT_START_TIME = 250
 
@@ -68,10 +71,10 @@ def generate_rift_parameter_points(
         Used to obtain location of continental crust (where age grid is NaN).
     topology_filenames : list of string, optional
         List of filenames containing topological features (to create a topological model with).
-        If not specified then defaults to the 'deforming_model/2019_v2/' topological model.
+        If not specified then defaults to the 'deforming_model/Z22/' topological model.
     rotation_filenames : list of string, optional
         List of filenames containing rotation features (to create a topological model with).
-        If not specified then defaults to the 'deforming_model/2019_v2/' topological model.
+        If not specified then defaults to the 'deforming_model/Z22/' topological model.
     oldest_rift_start_time : int, optional
         How far to go back in time when searching for the beginning of rifting.
         Defaults to 250 Ma.

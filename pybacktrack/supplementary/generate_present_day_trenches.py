@@ -25,9 +25,9 @@ import sys
 # Need version 30 to use pygplates.TopologicalModel and pygplates.TopologicalSnapshot.
 PYGPLATES_VERSION_REQUIRED = pygplates.Version(30)
 
-# Default to the 2019 v2 deforming model (in 'deforming_model/2019_v2/' sub-directory).
-DEFAULT_TOPOLOGY_FILES = os.path.join('deforming_model', '2019_v2', 'topology_files.txt')
-DEFAULT_ROTATION_FILES = os.path.join('deforming_model', '2019_v2', 'rotation_files.txt')
+# Default to the Zahirovic et al. (2022) deforming model (in 'deforming_model/Z22/' sub-directory).
+DEFAULT_TOPOLOGY_FILES = os.path.join('deforming_model', 'Z22', 'topology_files.txt')
+DEFAULT_ROTATION_FILES = os.path.join('deforming_model', 'Z22', 'rotation_files.txt')
 
 # Default distances to present-day trenches (on subducting and overriding sides) to exclude bathymetry grid points (in kms).
 DEFAULT_EXCLUDE_SUBDUCTING_DISTANCE_TO_TRENCHES_KMS = 60
@@ -45,10 +45,10 @@ def generate_present_day_trenches(
     ----------
     topology_filenames : list of string, optional
         List of filenames containing topological features (to create a topological model with).
-        If not specified then defaults to the 'deforming_model/2019_v2/' topological model.
+        If not specified then defaults to the 'deforming_model/Z22/' topological model.
     rotation_filenames : list of string, optional
         List of filenames containing rotation features (to create a topological model with).
-        If not specified then defaults to the 'deforming_model/2019_v2/' topological model.
+        If not specified then defaults to the 'deforming_model/Z22/' topological model.
     exclude_subducting_distance_to_trenches_kms : float, optional
         The distance to present-day trenches (in kms) on *subducting* side that will be used to exclude grid points during paleobathymetry gridding.
     exclude_overriding_distance_to_trenches_kms : float, optional
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     NOTE: Separate the positional and optional arguments with '--' (workaround for bug in argparse module).
     For example...
 
-    python generate_present_day_trenches.py ... -- trenches.gpmlz
+    python generate_present_day_trenches.py ... -- trenches.gpmlz subducting_boundaries.gpmlz
     """
     
         #
