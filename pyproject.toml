@@ -14,6 +14,7 @@ authors = [{ name = "John Cannon", email = "john.cannon@sydney.edu.au" }]
 # TODO: Uncomment these two license lines when Python 3.8 is no longer our min. requirement.
 #       And also remove "License ::" from 'classifiers' (replaced by updated 'license' field).
 #       This requires Python >=3.9 (setuptools >=77.0).
+#       Until then we will get the warning "License classifiers are deprecated".
 #
 #license = "GPL-2.0-only"
 #license-files = ["LICENSE"]
@@ -66,6 +67,9 @@ packages.find.namespaces = true
 include-package-data = true
 # Load the 'pybacktrack.version' module and get its '__version__' attribute.
 dynamic.version = {attr = "pybacktrack.version.__version__"}
+
+[tool.setuptools_scm]
+# This section must be present (even if empty) for setuptools-scm <8.1.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
