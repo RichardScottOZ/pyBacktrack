@@ -39,10 +39,16 @@ dependencies = [
     "pygplates",
     # Support for accessing *namespace* packages only added in Python 3.10 (to 'importlib.resources').
     # For Python <3.10 must instead use backport PyPI package 'importlib_resources'.
-    "importlib_resources;python_version<'3.10'"]
+    "importlib_resources;python_version<'3.10'"
+]
 urls.Homepage = "https://github.com/EarthByte/pyBacktrack"
 urls.Documentation = "http://pybacktrack.readthedocs.io"
-optional-dependencies.dev = ["pytest"]
+optional-dependencies.dev = [
+    # Used by supplementary script 'generate_rift_grids.py'.
+    # Alternatively can use "GPlately" (it contains 'PlateTectonicTools').
+    "PlateTectonicTools",
+    "pytest"
+]
 
 [tool.setuptools]
 # Help setuptools to look only at the 'pybacktrack' package (so doesn't think other top-level dirs are packages).
