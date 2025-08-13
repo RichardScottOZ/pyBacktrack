@@ -37,9 +37,9 @@ def test_backtrack_script(tmpdir):
     #         -m GDH1
     #         -ym M2
     #         -slm Haq87_SealevelCurve_Longterm
-    #         -o ODP-114-699_backtrack_amended.txt
+    #         -o test_data/ODP-114-699_backtrack_amended.txt
     #         --
-    #         ODP-114-699_backtrack_decompacted.txt
+    #         test_data/ODP-114-699_backtrack_decompacted.txt
     #
     backtrack_script_command_line = [python, '-m', 'pybacktrack.backtrack_cli',
                                      '-w', str(input_well_filename),
@@ -85,9 +85,9 @@ def test_backtrack_ODP(tmpdir):
     #         -m GDH1
     #         -ym M2
     #         -slm Haq87_SealevelCurve_Longterm
-    #         -o ODP-114-699_backtrack_amended.txt
+    #         -o test_data/ODP-114-699_backtrack_amended.txt
     #         --
-    #         ODP-114-699_backtrack_decompacted.txt
+    #         test_data/ODP-114-699_backtrack_decompacted.txt
     #
     well, decompacted_wells = pybacktrack.backtrack_and_write_well(
         str(test_decompacted_output_filename),
@@ -129,9 +129,9 @@ def test_backtrack_DSDP(tmpdir):
     #         -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth dynamic_topography water_depth tectonic_subsidence paleo_longitude paleo_latitude lithology
     #         -ym M2
     #         -slm Haq87_SealevelCurve_Longterm
-    #         -o DSDP-36-327_backtrack_amended.txt
+    #         -o test_data/DSDP-36-327_backtrack_amended.txt
     #         --
-    #         DSDP-36-327_backtrack_decompacted.txt
+    #         test_data/DSDP-36-327_backtrack_decompacted.txt
     #
     with warnings.catch_warnings():
         # Ignore user warnings related to dynamic topography.

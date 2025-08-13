@@ -36,9 +36,9 @@ def test_backstrip_script(tmpdir):
     #         -l primary extended
     #         -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth min_tectonic_subsidence max_tectonic_subsidence average_tectonic_subsidence min_water_depth max_water_depth average_water_depth paleo_longitude paleo_latitude lithology
     #         -slm Haq87_SealevelCurve_Longterm
-    #         -o sunrise_backstrip_amended.txt
+    #         -o test_data/sunrise_backstrip_amended.txt
     #         --
-    #         sunrise_backstrip_decompacted.txt
+    #         test_data/sunrise_backstrip_decompacted.txt
     #
     backstrip_script_command_line = [python, '-m', 'pybacktrack.backstrip_cli',
                                      '-w', str(input_well_filename),
@@ -83,9 +83,9 @@ def test_backstrip(tmpdir):
     #         -l primary extended
     #         -d age compacted_depth compacted_thickness decompacted_thickness decompacted_density decompacted_sediment_rate decompacted_depth min_tectonic_subsidence max_tectonic_subsidence average_tectonic_subsidence min_water_depth max_water_depth average_water_depth paleo_longitude paleo_latitude lithology
     #         -slm Haq87_SealevelCurve_Longterm
-    #         -o sunrise_backstrip_amended.txt
+    #         -o test_data/sunrise_backstrip_amended.txt
     #         --
-    #         sunrise_backstrip_decompacted.txt
+    #         test_data/sunrise_backstrip_decompacted.txt
     #
     with warnings.catch_warnings():
         # Ignore user warnings related to well thickness being larger than total sediment thickness.
