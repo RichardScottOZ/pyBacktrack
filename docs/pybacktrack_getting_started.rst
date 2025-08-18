@@ -352,6 +352,8 @@ The following example is used to demonstrate both approaches. It backtracks an o
   * dynamic_topography
   * water_depth
   * tectonic_subsidence
+  * paleo_longitude
+  * paleo_latitude
   * lithology
 
 .. _pybacktrack_use_a_builtin_module_script:

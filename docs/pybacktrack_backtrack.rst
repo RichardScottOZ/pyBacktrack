@@ -157,14 +157,38 @@ The *dynamic_topography* column is the dynamic topography elevation relative to 
 The *tectonic_subsidence* column is the output of the underlying :ref:`tectonic subsidence model <pybacktrack_backtrack_oceanic_and_continental_subsidence>`,
 and *water_depth* is obtained from tectonic subsidence by subtracting an isostatic correction of the decompacted sediment thickness.
 
-Finally, the *paleo_longitude* and *paleo_latitude* columns contain the reconstructed well location at each *age*.
-The present day well location is assigned a plate ID (using static polygons) and reconstructed back through time (using a rotation model).
-By default, this uses the same static polygons and rotation model used for :ref:`paleobathymetry gridding <pybacktrack_paleo_bathymetry_gridding_procedure>`
-(but you can specify your own).
+Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`paleo location of the drill site <pybacktrack_backtrack_paleo_locations>` at each *age*.
 
 .. note:: The output columns are specified using the ``-d`` command-line option (run ``python -m pybacktrack.backtrack_cli --help`` to see all options), or
           using the *decompacted_columns* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
+
+.. _pybacktrack_backtrack_paleo_locations:
+
+Paleo locations of drill site
+-----------------------------
+
+The present day location of a drill site is assigned a plate ID and reconstructed back through time (using a reconstruction model consisting of static polygons and rotations).
+The reconstructed locations at each stratigrahic age become the *paleo_longitude* and *paleo_latitude* columns of the :ref:`decompacted output file <pybacktrack_backtrack_output_decompacted>`.
+
+You can either use the default built-in reconstruction model, or specify your own static polygon and rotation files
+(using the ``--static_polygon_filename`` and ``--rotation_filenames`` command-line options).
+
+The default reconstruction model is Zahirovic 2022:
+
+* Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
+  (data obtained `here <https://zenodo.org/records/13899315>`_)
+
+The default reference frame for the Zahirovic 2022 model is the mantle reference frame (anchor plate ``0``).
+Alternatively you can use its *paleomagnetic* reference frame by specifying anchor plate ``701701`` (using the command-line option ``--anchor 701701``).
+This can be useful for paleoclimate-related research.
+
+.. note:: | Using a *non-default* reconstruction model (static polygons and rotations), or changing the reference frame (anchor plate), only affects the reconstruction
+            of the present day drill site location into its *paleo locations*.
+          | In particular, this does *not* affect :ref:`dynamic topography <pybacktrack_dynamic_topography>`.
+            This is because each dynamic topography model has its own reconstruction model (and mantle reference frame) that it uses to independently reconstruct
+            the present day drill site location into paleo locations appropriate for sampling that dynamic topography model's mantle-reference-frame grids.
 
 .. _pybacktrack_backtrack_sealevel_variation:
 
@@ -262,7 +286,7 @@ oceanic crust (since this does not need rift start and end ages). If an error me
 add these to your drill site file as ``RiftStartAge`` and ``RiftEndAge`` attributes, and then run backtrack again.
 
 .. note:: In pyBacktrack version 1.4 if the ``RiftStartAge`` and ``RiftEndAge`` attributes are not specified in your drill site file then
-          they are obtained implicitly from the builtin rift start/end time grids (see :ref:`pybacktrack_continental_subsidence`), so an
+          they are obtained implicitly from the built-in rift start/end time grids (see :ref:`pybacktrack_continental_subsidence`), so an
           error message is unlikely to be generated when your drill site file is on *continental* crust.
 
 .. _pybacktrack_present_day_tectonic_subsidence:
@@ -361,7 +385,7 @@ the same regardless of whether a rift *start* time was specified or not.
 
 .. note:: If the rift end time (and optional start time) is not explicitly specified in the drill site file or explicitly on the ``backtrack`` command-line
           (or explicitly via the :func:`pybacktrack.backtrack_and_write_well` function) then both the rift start and end times are obtained implicitly from the
-          builtin rift start/end time grids. If the well location is outside valid regions of the rift start/end time grids then an error is
+          built-in rift start/end time grids. If the well location is outside valid regions of the rift start/end time grids then an error is
           generated and you must then explicitly provide the rift end time (and optionally the rift start time). However currently the rift grids cover all
           submerged continental crust (ie, where the total sediment thickness grid contains valid values but the age grid does not) and not just the areas
           that are rifting - see :ref:`rift gridding <pybacktrack_builtin_rift_gridding_procedure>` - so an error is unlikely to be generated.

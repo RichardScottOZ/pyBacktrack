@@ -157,14 +157,32 @@ The *average_water_depth* column is just the average *min_water_depth* and *max_
 *average_tectonic_subsidence* are obtained from *min_water_depth* and *max_water_depth* and *average_water_depth* by adding an isostatic correction of the
 decompacted sediment thickness (to obtain the deeper isostatically compensated, sediment-free water depth also known as tectonic subsidence).
 
-Finally, the *paleo_longitude* and *paleo_latitude* columns contain the reconstructed well location at each *age*.
-The present day well location is assigned a plate ID (using static polygons) and reconstructed back through time (using a rotation model).
-By default, this uses the same static polygons and rotation model used for :ref:`paleobathymetry gridding <pybacktrack_paleo_bathymetry_gridding_procedure>`
-(but you can specify your own).
+Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`paleo location of the drill site <pybacktrack_backstrip_paleo_locations>` at each *age*.
 
 .. note:: The output columns are specified using the ``-d`` command-line option (run ``python -m pybacktrack.backstrip_cli --help`` to see all options), or
           using the *decompacted_columns* argument of the :func:`pybacktrack.backstrip_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
+
+.. _pybacktrack_backstrip_paleo_locations:
+
+Paleo locations of drill site
+-----------------------------
+
+The present day location of a drill site is assigned a plate ID and reconstructed back through time (using a reconstruction model consisting of static polygons and rotations).
+The reconstructed locations at each stratigrahic age become the *paleo_longitude* and *paleo_latitude* columns of the :ref:`decompacted output file <pybacktrack_backstrip_output_decompacted>`.
+
+You can either use the default built-in reconstruction model, or specify your own static polygon and rotation files
+(using the ``--static_polygon_filename`` and ``--rotation_filenames`` command-line options).
+
+The default reconstruction model is Zahirovic 2022:
+
+* Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
+  (data obtained `here <https://zenodo.org/records/13899315>`_)
+
+The default reference frame for the Zahirovic 2022 model is the mantle reference frame (anchor plate ``0``).
+Alternatively you can use its *paleomagnetic* reference frame by specifying anchor plate ``701701`` (using the command-line option ``--anchor 701701``).
+This can be useful for paleoclimate-related research.
 
 .. _pybacktrack_backstrip_sealevel_variation:
 

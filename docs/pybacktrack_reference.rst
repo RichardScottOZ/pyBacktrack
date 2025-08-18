@@ -444,10 +444,10 @@ The following attributes are available to access the bundled data:
   Choices include ``Miller2024_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve``, ``Haq2024_Hybrid_SealevelCurve_Longterm``, ``Haq87_SealevelCurve`` and ``Haq87_SealevelCurve_Longterm``.
 
 ``pybacktrack.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES``
-  Rotation files of the reconstruction model used to reconstruct sediment-deposited crust for paleobathymetry gridding.
+  Rotation files of the `Zahirovic 2022 <https://zenodo.org/records/13899315>`_ default reconstruction model used to reconstruct sediment-deposited crust (at drill sites and for paleobathymetry gridding).
 
 ``pybacktrack.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME``
-  Static polygon file of the reconstruction model used to assign plate IDs to points on sediment-deposited crust for paleobathymetry gridding.
+  Static polygon file of the `Zahirovic 2022 <https://zenodo.org/records/13899315>`_ default reconstruction model used to assign plate IDs to points on sediment-deposited crust (at drill sites and for paleobathymetry gridding).
 
 Backtracking
 ^^^^^^^^^^^^

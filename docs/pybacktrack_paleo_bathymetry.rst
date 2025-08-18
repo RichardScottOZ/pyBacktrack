@@ -93,7 +93,7 @@ Also the `Paleobathymetry <https://github.com/EarthByte/pyBacktrack/blob/master/
 Paleobathymetry gridding procedure
 ----------------------------------
 
-Paleobathymetry gridding uses the :ref:`builtin rift start/end age grids <pybacktrack_builtin_rift_gridding_procedure>` along with the existing subsidence models (continental rifting and oceanic) and
+Paleobathymetry gridding uses the :ref:`built-in rift start/end age grids <pybacktrack_builtin_rift_gridding_procedure>` along with the existing subsidence models (continental rifting and oceanic) and
 the sediment decompaction functionality in pyBacktrack to generate paleo bathymetry grids (typically in 1 Myr intervals).
 
 The ``paleo_bathymetry`` module has similar options to the ``backtrack`` module. Such as options for the present day grids containing age, bathymetry, crustal thickness and sediment thickness.
@@ -105,17 +105,50 @@ However the ``paleo_bathymetry`` module differs from the ``backtrack`` module in
 
 .. note:: Sediment grid points near trenches are excluded by default to avoid deep bathymetry areas near trenches appearing in the reconstructed grids.
           Each trench has an exclusion distance on the subducting plate side (typically 60 kms) and an exlusion distance on the overriding plate side (typically 0 kms).
-          And these per-trench distances are all built into pyBacktrack. Any sediment grid points within these per-trench distances are excluded.
+          Any sediment grid points within these per-trench distances are excluded.
+          These distances are all built into pyBacktrack and vary from trench to trench.
+          They were hand tuned for each trench based on their resultant paleobathymetry.
           However this masking near trenches can be removed by specifying  ``--exclude_distances_to_trenches_kms 0 0``
           (for example, in the :ref:`paleo bathymetry example above <pybacktrack_paleo_bathymetry_example>`).
+          To retain the masking near trenches but remove the built-in hand tuning of distances you can specify ``--exclude_distances_to_trenches_kms 60 0``.
+          This will apply a global exclusion distance of 60 kms on the subducting plate side (and no exclusion on the overriding plate side).
 
 As with regular backtracking, those sediment grid points lying inside the age grid (valid regions) use an oceanic subsidence model and those outside use a continental rifting model.
-However, in lieu of explicitly providing the rift start and end ages (as for a 1D drill site) each 2D grid point samples the builtin rift start/end age grids.
-Each grid point is also assigned a plate ID (using static polygons) and reconstructed back through time.
+However, for the continental rifting model, in lieu of explicitly providing the rift start and end ages (as for a 1D drill site), each 2D grid point samples the built-in rift start/end age grids.
 
-.. note:: You can optionally override the rift periods sampled from the builtin rift start/end grids with a single rift period using the ``--rifting_period`` command-line option.
-          However this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
+.. note:: You can optionally override the rift periods sampled from the built-in rift start/end grids with a single rift period using the ``--rifting_period`` command-line option.
+          However this overrides the *spatially varying* rift periods (of built-in rift start/end grids) with a *constant* rift period.
           And hence is typically only useful for regional reconstructions (not global).
+
+Each grid point is assigned a plate ID and reconstructed back through time (using a reconstruction model consisting of static polygons and rotations).
+You can either use the default built-in reconstruction model, or specify your own static polygon and rotation files
+(using the ``--static_polygon_filename`` and ``--rotation_filenames`` command-line options).
+
+The default reconstruction model is Zahirovic 2022:
+
+* Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
+  (data obtained `here <https://zenodo.org/records/13899315>`_)
+
+The default reference frame for the Zahirovic 2022 model is the mantle reference frame (anchor plate ``0``).
+Alternatively you can use its *paleomagnetic* reference frame by specifying anchor plate ``701701`` (using the command-line option ``--anchor 701701``).
+This can be useful for paleoclimate-related research.
+
+.. note:: In pyBacktrack versions ``1.4`` and older, the default reconstruction model was Müller 2019:
+          
+          * Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M., Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J., Yang, T., Leonard, J., and Gurnis, M. (2019),
+            `A global plate model including lithospheric deformation along major rifts and orogens since the Triassic. Tectonics, vol. 38, <https://doi.org/10.1029/2018TC005462>`_.
+          
+          | Whereas in pyBacktrack ``1.5`` onwards the default is Zahirovic 2022.
+          | Müller 2019 is nearly identical to Zahirovic 2022 for the time period 250 Ma to present day.
+            The difference is due to the Zahirovic 2022 model including deformation in South China (from `Cao et al. 2021 <https://doi.org/10.1016/j.earscirev.2021.103605>`_).
+            This resulted in the optimised mantle reference frame being slightly different for this time period.
+          | Another difference is the Müller 2019 model does *not* include a paleomagnetic reference frame (ie, no anchor plate ``701701``).
+
+.. note:: | Using a *non-default* reconstruction model (static polygons and rotations), or changing the reference frame (anchor plate), only affects the reconstruction
+            of the present day sediment grid points into their *final paleobathymetry grid locations*.
+          | In particular, this does *not* affect dynamic topography. This is because each dynamic topography model has its own reconstruction model (and mantle reference frame) that it uses to
+            independently reconstruct the present day sediment grid points into locations appropriate for sampling that dynamic topography model's mantle-reference-frame grids.
 
 Each grid point has a single lithology, with an initial compacted thickness sampled from the total sediment thickness grid at present day that is progressively decompacted back through geological time.
 
@@ -137,22 +170,29 @@ Finally, the reconstructed locations of all grid points and their reconstructed 
 
 .. _pybacktrack_builtin_rift_gridding_procedure:
 
-Builtin rift gridding procedure
--------------------------------
+Built-in rift gridding procedure
+--------------------------------
 
-PyBacktrack comes with two builtin grids containing rift start and end ages on submerged continental crust at 5 minute resolution.
+PyBacktrack comes with two built-in grids containing rift start and end ages on submerged continental crust at 5 minute resolution.
 This is used during paleobathymetry gridding to obtain the rift periods of gridded points on continental crust.
 It is also used during regular backtracking to obtain the rift period of a drill site on continental crust (when it is not specified in the drill site file or on the command-line).
 
 The rift grids cover all submerged continental crust, not just those areas that have undergone rifting.
 Submerged continental crust is where the total sediment thickness grid contains valid values but the age grid does not (ie, submerged crust that is non oceanic).
 
-The rift grids were generated with ``pybacktrack/supplementary/generate_rift_grids.py`` using the Müller 2019 deforming plate model:
+The built-in rift grids were generated using the Zahirovic 2022 deforming plate model:
 
-* Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M., Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J., Yang, T., Leonard, J., and Gurnis, M. (2019),
-  `A global plate model including lithospheric deformation along major rifts and orogens since the Triassic. Tectonics, vol. 38, <https://doi.org/10.1029/2018TC005462>`_.
+* Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
+  (data obtained `here <https://zenodo.org/records/13899315>`_)
 
-.. note:: The rift generation script ``pybacktrack/supplementary/generate_rift_grids.py`` can be obtained by :ref:`installing the supplementary scripts <pybacktrack_install_supplementary>`.
+.. note:: In pyBacktrack versions ``1.4`` and older, the Müller 2019 deforming model was used to generate the built-in rift grids:
+          
+          * Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M., Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J., Yang, T., Leonard, J., and Gurnis, M. (2019),
+            `A global plate model including lithospheric deformation along major rifts and orogens since the Triassic. Tectonics, vol. 38, <https://doi.org/10.1029/2018TC005462>`_.
+
+.. note:: The rift grids were generated with ``pybacktrack/supplementary/generate_rift_grids.py``.
+          This script can be obtained by :ref:`installing the supplementary scripts <pybacktrack_install_supplementary>`.
 
 This paragraph gives a brief overview of rift gridding...
 First, grid points on continental crust that have undergone *extensional* deformation (rifting) during their most recent deformation period have their rift start and end ages assigned
@@ -167,8 +207,8 @@ Finally, only those continental grid points that are submerged are stored in the
 This paragraph gives a more detailed explanation of how deformation in particular is used in ``pybacktrack/supplementary/generate_rift_grids.py``...
 The script allows one to specify a total sediment thickness grid and an age grid (defaulting to those included with pyBacktrack).
 Grid points are uniformly generated in longitude/latitude space on continental crust.
-Next pyGPlates is used to load the Müller 2019 topological plate model (containing rigid plate polygons and deforming networks) and reconstruct these continental grid points on back through geological time.
-Note that plate IDs do not need to be explicitly assigned in order to be able to reconstruct because recent functionality in pyGPlates, known as *reconstructing by topologies*, essentially continually assigns plate IDs
+Next pyGPlates is used to load the Zahirovic 2022 topological plate model (containing rigid plate polygons and deforming networks) and reconstruct these continental grid points on back through geological time.
+Note that plate IDs do not need to be explicitly assigned in order to be able to reconstruct because functionality in pyGPlates, known as *reconstructing by topologies*, essentially continually assigns plate IDs
 using the topological plate polygons and deforming networks while each grid point is reconstructed back through time.
 This ensures the path of each grid point is correctly reconstructed through deforming regions so that we can correctly determine when it enters and exits a deforming region.
 During this reconstruction each grid point is queried (at 1Myr intervals) whether it passes through a deforming network.
