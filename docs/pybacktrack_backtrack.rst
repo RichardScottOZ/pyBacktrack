@@ -177,8 +177,8 @@ You can either use the default built-in reconstruction model, or specify your ow
 The default reconstruction model is Zahirovic 2022:
 
 * Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
-  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
-  (data obtained `here <https://zenodo.org/records/13899315>`_)
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`__
+  (data obtained `here <https://zenodo.org/records/13899315>`__)
 
 The default reference frame for the Zahirovic 2022 model is the mantle reference frame (anchor plate ``0``).
 Alternatively you can use its *paleomagnetic* reference frame by specifying anchor plate ``701701`` (using the command-line option ``--anchor 701701``).
@@ -202,20 +202,20 @@ This adjusts the isostatic correction of the decompacted sediment thickness to t
 
 These are the built-in sea level models :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backtrack``:
 
-* ``Miller2024_SealevelCurve`` - `Global Mean and Relative Sea-Level Changes Over the Past 66 Myr: Implications for Early Eocene Ice Sheets <https://doi.org/10.3389/esss.2023.10091>`_
+* ``Miller2024_SealevelCurve`` - `Global Mean and Relative Sea-Level Changes Over the Past 66 Myr: Implications for Early Eocene Ice Sheets <https://doi.org/10.3389/esss.2023.10091>`__
 
-* ``Haq2024_Hybrid_SealevelCurve`` - Combined `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_ and `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
-  sea level curves for the Cretaceous and Jurassic respectively, with the Cenozoic section of `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_.
+* ``Haq2024_Hybrid_SealevelCurve`` - Combined `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`__ and `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`__
+  sea level curves for the Cretaceous and Jurassic respectively, with the Cenozoic section of `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__.
 
-  - 0-66 Ma: `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_
-  - 66-140 Ma: `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_
-  - 140.1-205 Ma: `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
+  - 0-66 Ma: `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__
+  - 66-140 Ma: `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`__
+  - 140.1-205 Ma: `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`__
 
 * ``Haq2024_Hybrid_SealevelCurve_Longterm`` - Long-term curve.
 
-  Note that while this is from `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_, it is digitized to follow the peaks of the shorter term curve.
+  Note that while this is from `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__, it is digitized to follow the peaks of the shorter term curve.
 
-* ``Haq87_SealevelCurve`` - `The Phanerozoic Record of Global Sea-Level Change <https://doi.org/10.1126/science.1116412>`_
+* ``Haq87_SealevelCurve`` - `The Phanerozoic Record of Global Sea-Level Change <https://doi.org/10.1126/science.1116412>`__
 
 * ``Haq87_SealevelCurve_Longterm`` - Long-term curve.
 
@@ -243,10 +243,10 @@ will automatically use the oceanic subsidence model whereas a drill site outside
 .. _pybacktrack_bundled_age_grid:
 
 The default present-day age grid :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backtrack`` is a 6-minute resolution grid
-of the age of the world's ocean crust that uses the timescale of `Gee and Kent (2007) <https://doi.org/10.1016/B978-044452748-6.00097-3>`_:
+of the age of the world's ocean crust that uses the timescale of `Gee and Kent (2007) <https://doi.org/10.1016/B978-044452748-6.00097-3>`__:
 
 * Seton, M., Müller, R. D., Zahirovic, S., Williams, S., Wright, N., Cannon, J., Whittaker, J., Matthews, K., McGirr, R., (2020),
-  `A global dataset of present-day oceanic crustal age and seafloor spreading parameters <https://doi.org/10.1029/2020GC009214>`_,
+  `A global dataset of present-day oceanic crustal age and seafloor spreading parameters <https://doi.org/10.1029/2020GC009214>`__,
   Geochemistry, Geophysics, Geosystems, doi: 10.1029/2020GC009214
 
 
@@ -305,7 +305,7 @@ the present-day tectonic subsidence. The isostatic correction uses the average s
 The default present-day bathymetry grid :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backtrack`` is a
 6-minute resolution global grid of the land topography and ocean bathymetry (although only the ocean bathymetry is actually needed):
 
-* Amante, C. and B. W. Eakins, `ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis <https://dx.doi.org/10.7289/V5C8276M>`_.
+* Amante, C. and B. W. Eakins, `ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis <https://dx.doi.org/10.7289/V5C8276M>`__.
   NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009
 
 .. note:: You can optionally specify your own bathymetry grid using the ``-t`` command-line option (run ``python -m pybacktrack.backtrack_cli --help`` to see all options), or
@@ -324,20 +324,20 @@ Oceanic subsidence is somewhat simpler and more accurately modelled than contine
 The age of oceanic crust at the drill site (sampled from the oceanic age grid) can be converted to tectonic subsidence (depth with sediment removed)
 by using an age-to-depth model. There are three models built into ``backtrack``:
 
-* ``RHCW18`` - Richards et al. (2020) `Structure and dynamics of the oceanic lithosphere-asthenosphere system <https://doi.org/10.1016/j.pepi.2020.106559>`_
+* ``RHCW18`` - Richards et al. (2020) `Structure and dynamics of the oceanic lithosphere-asthenosphere system <https://doi.org/10.1016/j.pepi.2020.106559>`__
   
   The parameters of the preferred RHCW18 Plate Model used in pyBacktrack include a potential mantle temperature of 1333 in °C,
   a plate thickness of 130 km and a zero-age ridge depth of 2500 m, as described in Richards et al. (2020)
-  (updated from Richards et al. (2018) and on the `related github repository <https://github.com/freddrichards/RHCW18_Plate_Model>`_).
+  (updated from Richards et al. (2018) and on the `related github repository <https://github.com/freddrichards/RHCW18_Plate_Model>`__).
 
 * ``CROSBY_2007`` - Crosby, A.G., (2007). *Aspects of the relationship between topography and gravity on the Earth and Moon, PhD thesis, University of Cambridge*
   
   The Python source code that implements this age-depth relationship can be found
-  `here <https://github.com/EarthByte/pyBacktrack/blob/8e21ec2b49be101e88d80e8ccb18fe736d68a277/pybacktrack/age_to_depth.py#L195-L264>`_.
+  `here <https://github.com/EarthByte/pyBacktrack/blob/8e21ec2b49be101e88d80e8ccb18fe736d68a277/pybacktrack/age_to_depth.py#L195-L264>`__.
   And note that additional background information on this model can be found in:
-  Crosby, A.G. and McKenzie, D., 2009. `An analysis of young ocean depth, gravity and global residual topography <https://doi.org/10.1111/j.1365-246X.2009.04224.x>`_.
+  Crosby, A.G. and McKenzie, D., 2009. `An analysis of young ocean depth, gravity and global residual topography <https://doi.org/10.1111/j.1365-246X.2009.04224.x>`__.
 
-* ``GDH1`` - Stein and Stein (1992) `Model for the global variation in oceanic depth and heat flow with lithospheric age <https://doi.org/10.1038/359123a0>`_
+* ``GDH1`` - Stein and Stein (1992) `Model for the global variation in oceanic depth and heat flow with lithospheric age <https://doi.org/10.1038/359123a0>`__
 
 The default model is ``RHCW18``.
 
@@ -362,7 +362,7 @@ Continental subsidence
 Continental subsidence is somewhat more complex and less accurately modelled than oceanic subsidence (due to lithospheric stretching).
 
 The continental subsidence model has two components of rifting as described in
-`PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`_.
+`PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`__.
 The first contribution is *initial* subsidence due to lithospheric thinning where low-density crust is thinned and hot asthenosphere rises underneath.
 In our model the crust and lithospheric mantle are identically stretched (uniform extension).
 The second contribution is thermal subsidence where the lithosphere thickens as it cools due to conductive heat loss.
@@ -410,7 +410,7 @@ also thinning the crust to match the actual crustal thickness at present day.
 The default present-day crustal thickness grid :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backtrack`` is a
 1-degree resolution grid of the thickness of the crustal part of the lithosphere:
 
-* Laske, G., Masters., G., Ma, Z. and Pasyanos, M., `Update on CRUST1.0 - A 1-degree Global Model of Earth's Crust <http://igppweb.ucsd.edu/~gabi/crust1.html#download>`_,
+* Laske, G., Masters., G., Ma, Z. and Pasyanos, M., `Update on CRUST1.0 - A 1-degree Global Model of Earth's Crust <http://igppweb.ucsd.edu/~gabi/crust1.html#download>`__,
   Geophys. Res. Abstracts, 15, Abstract EGU2013-2658, 2013
 
 .. note:: You can optionally specify your own crustal thickness grid using the ``-k`` command-line option (run ``python -m pybacktrack.backtrack_cli --help`` to see all options), or
@@ -454,40 +454,40 @@ dynamic topography since the start of rifting.
 
 These are the built-in dynamic topography models :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backtrack``:
 
-* *Young et al., 2022* - `Long-term Phanerozoic sea level change from solid Earth processes <https://doi.org/10.1016/j.epsl.2022.117451>`_
+* *Young et al., 2022* - `Long-term Phanerozoic sea level change from solid Earth processes <https://doi.org/10.1016/j.epsl.2022.117451>`__
 
-  * `gld428 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld428&name=Gld428_250-0Ma>`_
+  * `gld428 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld428&name=Gld428_250-0Ma>`__
 
-* *Braz et al., 2021* - `Modelling the role of dynamic topography and eustasy in the evolution of the Great Artesian Basin <https://doi.org/10.1111/bre.12606>`_
+* *Braz et al., 2021* - `Modelling the role of dynamic topography and eustasy in the evolution of the Great Artesian Basin <https://doi.org/10.1111/bre.12606>`__
 
-  * `D10_gmcm9 <http://portal.gplates.org/dynamic_topography_cesium/?model=gmcm9&name=D10_gmcm9>`_
+  * `D10_gmcm9 <http://portal.gplates.org/dynamic_topography_cesium/?model=gmcm9&name=D10_gmcm9>`__
 
-* *Cao et al., 2019* - `The interplay of dynamic topography and eustasy on continental flooding in the late Paleozoic <https://doi.org/10.1016/j.tecto.2019.04.018>`_
+* *Cao et al., 2019* - `The interplay of dynamic topography and eustasy on continental flooding in the late Paleozoic <https://doi.org/10.1016/j.tecto.2019.04.018>`__
 
-  * `AY18 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld324&name=AY18>`_
-  * `KM16 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld321&name=KM16>`_
+  * `AY18 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld324&name=AY18>`__
+  * `KM16 <http://portal.gplates.org/dynamic_topography_cesium/?model=gld321&name=KM16>`__
 
-* *Müller et al., 2017* - `Dynamic topography of passive continental margins and their hinterlands since the Cretaceous <https://doi.org/10.1016/j.gr.2017.04.028>`_
+* *Müller et al., 2017* - `Dynamic topography of passive continental margins and their hinterlands since the Cretaceous <https://doi.org/10.1016/j.gr.2017.04.028>`__
 
-  * `M1 <http://portal.gplates.org/dynamic_topography_cesium/?model=M1&name=M1>`_
-  * `M2 <http://portal.gplates.org/dynamic_topography_cesium/?model=M2&name=M2>`_
-  * `M3 <http://portal.gplates.org/dynamic_topography_cesium/?model=M3&name=M3>`_
-  * `M4 <http://portal.gplates.org/dynamic_topography_cesium/?model=M4&name=M4>`_
-  * `M5 <http://portal.gplates.org/dynamic_topography_cesium/?model=M5&name=M5>`_
-  * `M6 <http://portal.gplates.org/dynamic_topography_cesium/?model=M6&name=M6>`_
-  * `M7 <http://portal.gplates.org/dynamic_topography_cesium/?model=M7&name=M7>`_
+  * `M1 <http://portal.gplates.org/dynamic_topography_cesium/?model=M1&name=M1>`__
+  * `M2 <http://portal.gplates.org/dynamic_topography_cesium/?model=M2&name=M2>`__
+  * `M3 <http://portal.gplates.org/dynamic_topography_cesium/?model=M3&name=M3>`__
+  * `M4 <http://portal.gplates.org/dynamic_topography_cesium/?model=M4&name=M4>`__
+  * `M5 <http://portal.gplates.org/dynamic_topography_cesium/?model=M5&name=M5>`__
+  * `M6 <http://portal.gplates.org/dynamic_topography_cesium/?model=M6&name=M6>`__
+  * `M7 <http://portal.gplates.org/dynamic_topography_cesium/?model=M7&name=M7>`__
 
-* *Rubey et al., 2017* - `Global patterns of Earth's dynamic topography since the Jurassic <https://doi.org/10.5194/se-2017-26>`_
+* *Rubey et al., 2017* - `Global patterns of Earth's dynamic topography since the Jurassic <https://doi.org/10.5194/se-2017-26>`__
 
-  * `terra <http://portal.gplates.org/dynamic_topography_cesium/?model=terra&name=Terra>`_
+  * `terra <http://portal.gplates.org/dynamic_topography_cesium/?model=terra&name=Terra>`__
 
-* *Müller et al., 2008* - `Long-term sea-level fluctuations driven by ocean basin dynamics <https://doi.org/10.1126/science.1151540>`_
+* *Müller et al., 2008* - `Long-term sea-level fluctuations driven by ocean basin dynamics <https://doi.org/10.1126/science.1151540>`__
 
-  * `ngrand <http://portal.gplates.org/dynamic_topography_cesium/?model=ngrand&name=dynto_ngrand>`_
-  * `s20rts <http://portal.gplates.org/dynamic_topography_cesium/?model=s20rts&name=dynto_s20rts>`_
-  * `smean <http://portal.gplates.org/dynamic_topography_cesium/?model=smean&name=dynto_smean>`_
+  * `ngrand <http://portal.gplates.org/dynamic_topography_cesium/?model=ngrand&name=dynto_ngrand>`__
+  * `s20rts <http://portal.gplates.org/dynamic_topography_cesium/?model=s20rts&name=dynto_s20rts>`__
+  * `smean <http://portal.gplates.org/dynamic_topography_cesium/?model=smean&name=dynto_smean>`__
 
-.. note:: The above model links reference dynamic topography models that can be visualized in the `GPlates Web Portal <http://portal.gplates.org>`_.
+.. note:: The above model links reference dynamic topography models that can be visualized in the `GPlates Web Portal <http://portal.gplates.org>`__.
 
 The ``M1`` model is a combined forward/reverse geodynamic model, while models ``M2``-``M7`` are forward models.
 Models ``ngrand``, ``s20rts`` and ``smean`` are backward-advection models.
@@ -511,7 +511,7 @@ because their oceanic paleo-depths lack the regional detail at more recent times
 Geohistory analysis
 -------------------
 
-The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`_
+The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`__
 notebook shows how to visualize the decompaction of stratigraphic layers at a drill site.
 
 .. note:: The example notebooks are installed as part of the example data which can be installed by following :ref:`these instructions <pybacktrack_install_examples>`.

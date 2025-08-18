@@ -115,7 +115,7 @@ own grid by using the ``-s`` command-line option in the :ref:`backtrack <pybackt
 The default total sediment thickness grid is:
 
 * Straume, E.O., Gaina, C., Medvedev, S., Hochmuth, K., Gohl, K., Whittaker, J. M., et al. (2019).
-  `GlobSed: Updated total sediment thickness in the world's oceans. <https://doi.org/10.1029/2018GC008115>`_
+  `GlobSed: Updated total sediment thickness in the world's oceans. <https://doi.org/10.1029/2018GC008115>`__
   Geochemistry, Geophysics, Geosystems, 20. DOI: 10.1029/2018GC008115
 
 .. note:: The default total sediment thickness grid was updated in pyBacktrack version 1.4.
@@ -147,7 +147,7 @@ and a bottom depth equal to the total sediment thickness.
 Geohistory analysis
 ^^^^^^^^^^^^^^^^^^^
 
-The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`_
+The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`__
 notebook shows how to visualize the decompaction of stratigraphic layers at a drill site.
 
 .. note:: The example notebooks are installed as part of the example data which can be installed by following :ref:`these instructions <pybacktrack_install_examples>`.
@@ -179,7 +179,7 @@ inside ``pybacktrack``, one containing *primary* lithologies and the other *exte
 The *primary* lithologies (inside ``pybacktrack``) contains the deep-sea lithologies listed in Table 1 in the pyBacktrack paper:
 
 * Müller, R. D., Cannon, J., Williams, S. and Dutkiewicz, A., 2018,
-  `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`_,
+  `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`__,
   **Geochemistry, Geophysics, Geosystems,** 19, 1898-1909, doi: 10.1029/2017GC007313.
 
 .. include:: ../pybacktrack/bundle_data/lithologies/primary.txt

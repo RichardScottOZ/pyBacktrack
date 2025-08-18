@@ -39,8 +39,8 @@ Documentation
 
 The documentation covers the pyBacktrack Python package. It includes installation, examples and an API reference.
 
-* `Documentation <http://pybacktrack.readthedocs.io/en/stable/>`_ for the latest public release.
-* `Documentation <http://pybacktrack.readthedocs.io/en/latest/>`_ for the latest development on ``master`` branch.
+* `Documentation <http://pybacktrack.readthedocs.io/en/stable/>`__ for the latest public release.
+* `Documentation <http://pybacktrack.readthedocs.io/en/latest/>`__ for the latest development on ``master`` branch.
 
 Reference
 ---------
@@ -48,7 +48,8 @@ Reference
 The following paper covers the theory and algorithms of pyBacktrack:
 
 * Müller, R. D., Cannon, J., Williams, S. and Dutkiewicz, A., 2018,
-  `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`_,
+  `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`__,
   **Geochemistry, Geophysics, Geosystems,** 19, 1898-1909, doi: 10.1029/2017GC007313
 
-It can be downloaded either at `Geochemistry, Geophysics, Geosystems <https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2017GC007313>`_ or `ResearchGate <https://www.researchgate.net/publication/325045269_PyBacktrack_10_A_Tool_for_Reconstructing_Paleobathymetry_on_Oceanic_and_Continental_Crust>`_.
+It can be downloaded either at `Geochemistry, Geophysics, Geosystems <https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2017GC007313>`__ or
+`ResearchGate <https://www.researchgate.net/publication/325045269_PyBacktrack_10_A_Tool_for_Reconstructing_Paleobathymetry_on_Oceanic_and_Continental_Crust>`__.

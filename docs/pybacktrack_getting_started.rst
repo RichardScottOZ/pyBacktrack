@@ -33,7 +33,7 @@ Using :ref:`Docker <pybacktrack_install_using_docker>` is also more straightforw
 Using conda
 ^^^^^^^^^^^
 
-We recommend installing pyBacktrack using `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/index.html>`_.
+We recommend installing pyBacktrack using `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/index.html>`__.
 
 To install the latest stable version of pyBacktrack type the following in a terminal or command window
 (on macOS and Ubuntu this is a *Terminal* window, and on Windows you'll need to open an *Anaconda prompt* from the Start menu):
@@ -58,7 +58,7 @@ You can then use pyBacktrack. For example, to see the pyBacktrack version:
 Using pip
 ^^^^^^^^^
 
-Python packages installed using `pip <https://pypi.org/project/pip/>`_ will typically also have their dependency packages automatically installed also.
+Python packages installed using `pip <https://pypi.org/project/pip/>`__ will typically also have their dependency packages automatically installed also.
 However ``pybacktrack`` requires manual installation of some of its dependencies.
 
 .. contents::
@@ -72,10 +72,10 @@ Requirements
 
 PyBacktrack depends on:
 
-- `NumPy <http://www.numpy.org/>`_
-- `SciPy <https://www.scipy.org/>`_
-- `Generic Mapping Tools (GMT) <https://www.generic-mapping-tools.org/>`_ (>=5.0.0)
-- `PyGPlates <http://www.gplates.org/>`_
+- `NumPy <http://www.numpy.org/>`__
+- `SciPy <https://www.scipy.org/>`__
+- `Generic Mapping Tools (GMT) <https://www.generic-mapping-tools.org/>`__ (>=5.0.0)
+- `PyGPlates <http://www.gplates.org/>`__
 
 `NumPy` and `SciPy` are automatically installed by `pip` when :ref:`pybacktrack is installed <pybacktrack_pip_install_pybacktrack>`, however `GMT` (version 5 or above) and `pyGPlates` need to be manually installed.
 
@@ -83,7 +83,7 @@ PyBacktrack depends on:
 Also ensure that version 5 or above (supports NetCDF version 4) is installed since the :ref:`bundled grid files in pyBacktrack<pybacktrack_reference_bundle_data>` are in NetCDF4 format.
 
 `PyGPlates` is not currently installable as a package and so needs to be in the python path (sys.path or PYTHONPATH).
-Installation instructions are available `here <http://www.gplates.org/docs/pygplates/index.html>`_.
+Installation instructions are available `here <http://www.gplates.org/docs/pygplates/index.html>`__.
 
 `PyGPlates` now supports Python 3 only (if you're still using Python 2.7 then you can try pyBacktrack version 1.4 or older).
 The :ref:`Macports install example <pybacktrack_install_requirements_mac>` below shows one approach to selecting the default Python using ``sudo port select``.
@@ -113,7 +113,7 @@ Then install Python 3 (and Pip):
   sudo apt install python3 python3-pip
   sudo pip3 install --upgrade pip
 
-Then download the pyGPlates Python 3 debian package `pygplates_0.36.0_py36_ubuntu-18.04-amd64.deb <https://www.earthbyte.org/download-pygplates-0-36/>`_,
+Then download the pyGPlates Python 3 debian package `pygplates_0.36.0_py36_ubuntu-18.04-amd64.deb <https://www.earthbyte.org/download-pygplates-0-36/>`__,
 and install it:
 ::
 
@@ -129,7 +129,7 @@ Then add the installed location of pyGPlates to the PYTHONPATH environment varia
 Install Python, Pip, GMT and pyGPlates on Mac using Macports
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-This is an example demonstrating how to install GMT and pyGPlates on a Mac system using `Macports <https://www.macports.org/>`_.
+This is an example demonstrating how to install GMT and pyGPlates on a Mac system using `Macports <https://www.macports.org/>`__.
 
 First install GMT 5:
 ::
@@ -162,7 +162,7 @@ Set your default ``python`` to Python 3.8:
           ...but this will require using ``python3`` on the command-line to run
           :ref:`pybacktrack <pybacktrack_use_a_builtin_module_script>` (instead of just ``python``).
 
-Then download a pyGPlates Mac zip file, such as `pygplates_0.36.0_py38_Darwin-x86_64.zip <https://www.earthbyte.org/download-pygplates-0-36/>`_ for Python 3.8 on an Intel Mac,
+Then download a pyGPlates Mac zip file, such as `pygplates_0.36.0_py38_Darwin-x86_64.zip <https://www.earthbyte.org/download-pygplates-0-36/>`__ for Python 3.8 on an Intel Mac,
 and extract it to your home directory.
 
 Then add the unzipped location of pyGPlates to the PYTHONPATH environment variable, such as:
@@ -184,7 +184,7 @@ To install the latest stable version, run:
 
   python -m pip install pybacktrack
 
-.. warning:: | On Mac systems, when using `Macports <https://www.macports.org/>`_, it might be better to install to the
+.. warning:: | On Mac systems, when using `Macports <https://www.macports.org/>`__, it might be better to install to the
                local user install directory with ``python -m pip install --user pybacktrack`` to avoid confusing Macports
                (which installs to the system install directory).
              | And on linux systems, if you have admin privileges, you can install to the system install directory with ``sudo python -m pip install pybacktrack``.
@@ -204,9 +204,9 @@ To install the latest development version (requires Git on local system), run:
   python -m pip install "git+https://github.com/EarthByte/pyBacktrack.git"
 
 .. note:: | You may need to update your `Git` if you receive an error ending with ``tlsv1 alert protocol version``.
-          | This is apparently due to an `update on GitHub <https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed>`_.
+          | This is apparently due to an `update on GitHub <https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed>`__.
 
-...or download the `pyBacktrack source code <https://github.com/EarthByte/pyBacktrack>`_, extract to a local directory and run:
+...or download the `pyBacktrack source code <https://github.com/EarthByte/pyBacktrack>`__, extract to a local directory and run:
 ::
 
   python -m pip install <path-to-local-directory>
@@ -219,18 +219,18 @@ To install the latest development version (requires Git on local system), run:
 Using Docker
 ^^^^^^^^^^^^
 
-This method of running ``pybacktrack`` relies on `Docker <https://www.docker.com/>`_, so before installing
-the ``pybacktrack`` docker image, ensure you have installed `Docker <https://www.docker.com/>`_.
+This method of running ``pybacktrack`` relies on `Docker <https://www.docker.com/>`__, so before installing
+the ``pybacktrack`` docker image, ensure you have installed `Docker <https://www.docker.com/>`__.
 
-.. note:: | On Windows platforms you can install `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`_.
-            Note that `Docker Toolbox <https://docs.docker.com/toolbox/overview/>`_ has been deprecated (and now *Docker Desktop for Windows* is recommended).
+.. note:: | On Windows platforms you can install `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`__.
+            Note that `Docker Toolbox <https://docs.docker.com/toolbox/overview/>`__ has been deprecated (and now *Docker Desktop for Windows* is recommended).
           | A similar situation applies on Mac platforms where you can install
-            `Docker Desktop for Mac <https://docs.docker.com/docker-for-mac/install/>`_ (with *Docker Toolbox* being deprecated).
+            `Docker Desktop for Mac <https://docs.docker.com/docker-for-mac/install/>`__ (with *Docker Toolbox* being deprecated).
 
 Once Docker is installed, open a terminal (command-line interface).
 
-.. note:: | For `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`_ and
-            `Docker Desktop for Mac <https://docs.docker.com/docker-for-mac/install/>`_ this a regular command-line terminal.
+.. note:: | For `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`__ and
+            `Docker Desktop for Mac <https://docs.docker.com/docker-for-mac/install/>`__ this a regular command-line terminal.
           | Also on Linux systems this a regular command-line terminal.
 
 To install the ``pybacktrack`` docker image, type:
@@ -262,7 +262,7 @@ or any :ref:`other examples <pybacktrack_overview>` in this documentation. For e
 
     python3 -m pybacktrack.backtrack_cli -w pybacktrack_examples/example_data/ODP-114-699-Lithology.txt -d age water_depth -- ODP-114-699_backtrack_decompacted.txt
 
-If you wish to run the `example notebooks <https://github.com/EarthByte/pyBacktrack/tree/master/pybacktrack/notebooks>`_
+If you wish to run the `example notebooks <https://github.com/EarthByte/pyBacktrack/tree/master/pybacktrack/notebooks>`__
 then there is a ``notebook.sh`` script to start a Jupyter notebook server in the running docker container:
 
 .. code-block:: none
@@ -277,7 +277,7 @@ Then you can start a web browser on your local machine and type the following in
 
 | This will display the current working directory in the docker container.
 | In the web browser, navigate to ``pybacktrack_examples`` and then ``notebooks``.
-| Then click on a notebook (such as `backtrack.ipynb <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/backtrack.ipynb>`_).
+| Then click on a notebook (such as `backtrack.ipynb <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/backtrack.ipynb>`__).
 | You should be able to run the notebook, or modify it and then run it.
 
 .. _pybacktrack_install_examples:

@@ -177,8 +177,8 @@ You can either use the default built-in reconstruction model, or specify your ow
 The default reconstruction model is Zahirovic 2022:
 
 * Zahirovic, S., Eleish, A., Doss, S., Pall, J., Cannon, J., Pistone, M., Tetley, M. G., Young, A., & Fox, P. (2022),
-  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`_
-  (data obtained `here <https://zenodo.org/records/13899315>`_)
+  `Subduction kinematics and carbonate platform interactions. Geoscience Data Journal, 9(2), p.371-383, <https://doi.org/10.1002/gdj3.146>`__
+  (data obtained `here <https://zenodo.org/records/13899315>`__)
 
 The default reference frame for the Zahirovic 2022 model is the mantle reference frame (anchor plate ``0``).
 Alternatively you can use its *paleomagnetic* reference frame by specifying anchor plate ``701701`` (using the command-line option ``--anchor 701701``).
@@ -194,20 +194,20 @@ This adjusts the isostatic correction of the decompacted sediment thickness to t
 
 These are the built-in sea level models :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``backstrip``:
 
-* ``Miller2024_SealevelCurve`` - `Global Mean and Relative Sea-Level Changes Over the Past 66 Myr: Implications for Early Eocene Ice Sheets <https://doi.org/10.3389/esss.2023.10091>`_
+* ``Miller2024_SealevelCurve`` - `Global Mean and Relative Sea-Level Changes Over the Past 66 Myr: Implications for Early Eocene Ice Sheets <https://doi.org/10.3389/esss.2023.10091>`__
 
-* ``Haq2024_Hybrid_SealevelCurve`` - Combined `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_ and `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
-  sea level curves for the Cretaceous and Jurassic respectively, with the Cenozoic section of `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_.
+* ``Haq2024_Hybrid_SealevelCurve`` - Combined `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`__ and `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`__
+  sea level curves for the Cretaceous and Jurassic respectively, with the Cenozoic section of `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__.
 
-  - 0-66 Ma: `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_
-  - 66-140 Ma: `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`_
-  - 140.1-205 Ma: `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`_
+  - 0-66 Ma: `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__
+  - 66-140 Ma: `Haq (2014) <https://doi.org/10.1016/j.gloplacha.2013.12.007>`__
+  - 140.1-205 Ma: `Haq (2017) <https://doi.org/10.1130/GSATG359A.1>`__
 
 * ``Haq2024_Hybrid_SealevelCurve_Longterm`` - Long-term curve.
 
-  Note that while this is from `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`_, it is digitized to follow the peaks of the shorter term curve.
+  Note that while this is from `Haq and Ogg (2024) <https://doi.org/10.1130/GSATGG593A.1>`__, it is digitized to follow the peaks of the shorter term curve.
 
-* ``Haq87_SealevelCurve`` - `The Phanerozoic Record of Global Sea-Level Change <https://doi.org/10.1126/science.1116412>`_
+* ``Haq87_SealevelCurve`` - `The Phanerozoic Record of Global Sea-Level Change <https://doi.org/10.1126/science.1116412>`__
 
 * ``Haq87_SealevelCurve_Longterm`` - Long-term curve.
 
@@ -225,7 +225,7 @@ A sea-level model is optional. If one is not specified then sea-level variation 
 Geohistory analysis
 -------------------
 
-The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`_
+The `Decompacting Stratigraphic Layers <https://github.com/EarthByte/pyBacktrack/blob/master/pybacktrack/notebooks/decompacting_stratigraphy.ipynb>`__
 notebook shows how to visualize the decompaction of stratigraphic layers at a drill site.
 
 .. note:: The example notebooks are installed as part of the example data which can be installed by following :ref:`these instructions <pybacktrack_install_examples>`.

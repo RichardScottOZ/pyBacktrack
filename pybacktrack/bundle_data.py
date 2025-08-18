@@ -51,7 +51,7 @@ The following module attributes are available:
   The primary lithology filename contains the lithologies covered in Table 1 in the pyBacktrack paper:
 
   * Müller, R. D., Cannon, J., Williams, S. and Dutkiewicz, A., 2018,
-    `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`_,
+    `PyBacktrack 1.0: A Tool for Reconstructing Paleobathymetry on Oceanic and Continental Crust <https://doi.org/10.1029/2017GC007313>`__,
     **Geochemistry, Geophysics, Geosystems,** 19, 1898-1909, doi: 10.1029/2017GC007313.
 
   **pybacktrack.bundle_data.EXTENDED_BUNDLE_LITHOLOGY_FILENAME**
