@@ -70,7 +70,7 @@ def reconstruct_drill_sites(
             continue
         
         # Age of bottom of drill site.
-        drill_site_age = drill_site.stratigraphic_units[-1].bottom_age;
+        drill_site_age = drill_site.stratigraphic_units[-1].bottom_age
         
         if start_time > drill_site_age:
             print('Not reconstructing drill site because "start_time" is older than oldest drilled section: "{}"'.format(drill_site_filename))
@@ -159,22 +159,44 @@ if __name__ == '__main__':
             
             return value
     
+        # Basically an argparse.RawDescriptionHelpFormatter that will also preserve formatting of
+        # argument help messages if they start with "R|".
+        class PreserveHelpFormatter(argparse.RawDescriptionHelpFormatter):
+            def _split_lines(self, text, width):
+                if text.startswith('R|'):
+                    return text[2:].splitlines()
+                return super(PreserveHelpFormatter, self)._split_lines(text, width)
+    
         #
         # Gather command-line options.
         #
         
         # The command-line parser.
-        parser = argparse.ArgumentParser(description=__description__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser = argparse.ArgumentParser(description=__description__, formatter_class=PreserveHelpFormatter)
+    
+        # Allow user to override default rotation filenames used to reconstruct the drill site(s).
+        #
+        # Defaults to the rotations of the default reconstruction model built into pyBacktrack.
+        parser.add_argument(
+            '-r', '--rotation_filenames', type=str, nargs='+',
+            default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,
+            metavar='rotation_filename',
+            help='R|One or more rotation files used to reconstruct the drill site(s).\n'
+                'Defaults to the rotations of the default reconstruction model built into pyBacktrack :\n'
+                '{}.\n'
+                .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES))
         
-        # Rotation filenames.
-        parser.add_argument('-r', '--rotation_filenames',
-            required=True, type=str, nargs='+', metavar='rotation_filename',
-            help='One or more rotation files.')
-        
-        # Static polygon filenames.
-        parser.add_argument('-p', '--static_polygon_filenames',
-            required=True, type=str, nargs='+', metavar='static_polygon_filename',
-            help='One or more static polygon files.')
+        # Allow user to override default static polygon filename used to assign plate IDs to the drill site(s).
+        #
+        # Defaults to the static polygons of the default reconstruction model built into pyBacktrack.
+        parser.add_argument(
+            '-p', '--static_polygon_filename', type=str,
+            default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,
+            metavar='static_polygon_filename',
+            help='R|File containing static polygons used to assign plate IDs to the drill site(s).\n'
+                'Defaults to the static polygons of the default reconstruction model built into pyBacktrack:\n'
+                '"{}".\n'
+                .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME))
         
         # Time range and increment.
         parser.add_argument('-s', '--start_time',
@@ -220,7 +242,7 @@ if __name__ == '__main__':
         reconstruct_drill_sites(
             args.drill_site_filenames,
             args.rotation_filenames,
-            args.static_polygon_filenames,
+            args.static_polygon_filename,
             output_filenames,
             args.end_time,
             args.start_time,
