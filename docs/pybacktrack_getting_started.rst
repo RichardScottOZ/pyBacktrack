@@ -5,7 +5,7 @@ Getting Started
 
 .. contents::
    :local:
-   :depth: 4
+   :depth: 3
 
 
 .. _pybacktrack_installation:
@@ -18,35 +18,42 @@ Installation
 Install pybacktrack
 -------------------
 
-You can install ``pybacktrack`` using:
+You can install ``pybacktrack`` in *one* of the following ways:
 
-#. :ref:`conda <pybacktrack_install_using_conda>`, or
-#. :ref:`pip <pybacktrack_install_using_pip>`, or
-#. :ref:`Docker <pybacktrack_install_using_docker>`.
+#. :ref:`Using conda <pybacktrack_install_using_conda>`:
 
-We recommend using :ref:`conda <pybacktrack_install_using_conda>` since it installs all the dependencies of ``pybacktrack``
-(using :ref:`pip <pybacktrack_install_using_pip>` currently only installs some of the dependencies, the rest must be install manually).
-Using :ref:`Docker <pybacktrack_install_using_docker>` is also more straightforward than ``pip`` since all the dependencies have been pre-installed.
+   This is recommended, since it installs **all** dependencies of ``pybacktrack``.
+
+#. :ref:`Using pip <pybacktrack_install_using_pip>`:
+
+   This will install all dependencies except ``gmt`` (which must be installed manually).
+
+#. :ref:`Using Docker <pybacktrack_install_using_docker>`:
+
+   This might be less familiar, but does come with all the dependencies pre-installed.
 
 .. _pybacktrack_install_using_conda:
 
 Using conda
 ^^^^^^^^^^^
 
-We recommend installing pyBacktrack using `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/index.html>`__.
+PyBacktrack can be installed using the `conda package manager <https://docs.conda.io/projects/conda/en/latest/user-guide/index.html>`__.
 
-To install the latest stable version of pyBacktrack type the following in a terminal or command window
-(on macOS and Ubuntu this is a *Terminal* window, and on Windows you'll need to open an *Anaconda prompt* from the Start menu):
+.. note:: We recommend installing `Miniconda <https://www.anaconda.com/docs/getting-started/miniconda/main>`__.
+
+To install the latest *stable* version of ``pybacktrack``, type the following in a terminal or command window:
 ::
 
   conda install -c conda-forge pybacktrack
 
-We recommend installing pyBacktrack into a new conda environment.
-For example, the following creates and activates a Python 3.10 environment named ``pybacktrack_py310`` containing pyBacktrack and all its dependencies:
+.. note:: On macOS and Ubuntu this is done in a *Terminal* window, and on Windows you'll need to open an *Anaconda prompt* from the Start menu.
+
+We recommend installing pyBacktrack into a *new* conda environment.
+For example, the following creates and activates a Python 3.13 environment named ``pybacktrack_py313`` containing pyBacktrack and all its dependencies:
 ::
 
-  conda create -n pybacktrack_py310 -c conda-forge python=3.10 pybacktrack
-  conda activate pybacktrack_py310
+  conda create -n pybacktrack_py313 -c conda-forge python=3.13 pybacktrack
+  conda activate pybacktrack_py313
 
 You can then use pyBacktrack. For example, to see the pyBacktrack version:
 ::
@@ -58,8 +65,11 @@ You can then use pyBacktrack. For example, to see the pyBacktrack version:
 Using pip
 ^^^^^^^^^
 
-Python packages installed using `pip <https://pypi.org/project/pip/>`__ will typically also have their dependency packages automatically installed also.
-However ``pybacktrack`` requires manual installation of some of its dependencies.
+PyBacktrack can be installed using `pip (the package installer for Python) <https://pip.pypa.io/en/stable/>`__.
+
+This will install all dependencies except ``gmt``, which must be installed manually.
+
+The following sections demonstrate how to first install ``gmt`` and then install ``pybacktrack``.
 
 .. contents::
    :local:
@@ -74,38 +84,32 @@ PyBacktrack depends on:
 
 - `NumPy <http://www.numpy.org/>`__
 - `SciPy <https://www.scipy.org/>`__
-- `Generic Mapping Tools (GMT) <https://www.generic-mapping-tools.org/>`__ (>=5.0.0)
 - `PyGPlates <http://www.gplates.org/>`__
+- `Generic Mapping Tools (GMT) <https://www.generic-mapping-tools.org/>`__ (>=5.0.0)
 
-`NumPy` and `SciPy` are automatically installed by `pip` when :ref:`pybacktrack is installed <pybacktrack_pip_install_pybacktrack>`, however `GMT` (version 5 or above) and `pyGPlates` need to be manually installed.
+``numpy``, ``scipy`` and ``pygplates`` are automatically installed by pip when ``pybacktrack`` is installed.
 
-`GMT` is called via the command-line (shell) and so just needs to be in the PATH in order for `pyBacktrack` to find it.
-Also ensure that version 5 or above (supports NetCDF version 4) is installed since the :ref:`bundled grid files in pyBacktrack<pybacktrack_reference_bundle_data>` are in NetCDF4 format.
+However ``gmt`` (version 5 or above) needs to be installed manually.
+GMT is called via the command-line (shell) and so it just needs to be in the ``PATH`` in order for pyBacktrack to find it.
 
-`PyGPlates` is not currently installable as a package and so needs to be in the python path (sys.path or PYTHONPATH).
-Installation instructions are available `here <http://www.gplates.org/docs/pygplates/index.html>`__.
+.. note:: | Ensure GMT version 5 or above is installed.
+          | This is required to support the NetCDF4 format of the :ref:`grid files bundled in pyBacktrack<pybacktrack_reference_bundle_data>`.
 
-`PyGPlates` now supports Python 3 only (if you're still using Python 2.7 then you can try pyBacktrack version 1.4 or older).
-The :ref:`Macports install example <pybacktrack_install_requirements_mac>` below shows one approach to selecting the default Python using ``sudo port select``.
-Another approach is using Python virtual environments where each environment has its own ``python``, ``pip`` and installed packages.
-However, currently pyGPlates does not yet work in virtual environments (at least on Mac systems).
+The following sections show how to install GMT and Python, on Ubuntu and macOS.
 
 .. _pybacktrack_install_requirements_ubuntu:
 
-Install Python, Pip, GMT and pyGPlates on Ubuntu
-""""""""""""""""""""""""""""""""""""""""""""""""
+Install GMT and Python/pip on Ubuntu
+""""""""""""""""""""""""""""""""""""
 
-This is an example demonstrating how to install GMT and pyGPlates on Ubuntu 18.04 (Bionic).
-
-.. note:: The main difference for other Ubuntu versions will be the pyGPlates install package
-          (you'll need to select the package appropriate for your Ubuntu version).
+This example assumes you are using a *Ubuntu* Linux operating system.
 
 First install GMT 5:
 ::
 
   sudo apt install gmt
 
-Then install Python 3 (and Pip):
+Then install Python 3 (and pip):
 ::
 
   sudo apt update
@@ -113,106 +117,142 @@ Then install Python 3 (and Pip):
   sudo apt install python3 python3-pip
   sudo pip3 install --upgrade pip
 
-Then download the pyGPlates Python 3 debian package `pygplates_0.36.0_py36_ubuntu-18.04-amd64.deb <https://www.earthbyte.org/download-pygplates-0-36/>`__,
-and install it:
-::
-
-  sudo apt install ./pygplates_0.36.0_py36_ubuntu-18.04-amd64.deb
-
-Then add the installed location of pyGPlates to the PYTHONPATH environment variable:
-::
-
-  export PYTHONPATH=$PYTHONPATH:/usr/lib
+.. note:: This will later require typing ``python3`` on the command-line (instead of ``python``) to use Python.
 
 .. _pybacktrack_install_requirements_mac:
 
-Install Python, Pip, GMT and pyGPlates on Mac using Macports
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Install GMT and Python/pip on macOS
+"""""""""""""""""""""""""""""""""""
 
-This is an example demonstrating how to install GMT and pyGPlates on a Mac system using `Macports <https://www.macports.org/>`__.
+This example uses the `Macports package manager <https://www.macports.org/>`__ for macOS.
 
 First install GMT 5:
 ::
 
   sudo port install gmt5
 
-.. note:: You will likely need to add ``/opt/local/lib/gmt5/bin/`` to your ``PATH`` environment variable,
-          for example in your ``~/.bashrc``, ``~/.bash_profile`` or ``~/.zprofile`` file so that PATH
-          is set each time you open a new terminal window.
-          After doing this, typing ``gmt`` should find GMT and show some help options.
+.. note:: | You will likely need to add ``/opt/local/lib/gmt5/bin/`` to your ``PATH`` environment variable.
+          | You can do this in your ``~/.bashrc``, ``~/.bash_profile`` or ``~/.zprofile`` file so that ``PATH``
+            is automatically set each time you open a new terminal window.
 
-Then install Python 3 (and Pip):
+| Then install Python 3 (and Pip).
+| For example, if you want Python 3.13:
+
+  ::
+
+    sudo port install python313
+    sudo port install py313-pip
+
+Then point the default ``python3`` to the newly installed Python 3.13:
 ::
 
-  sudo port install python38
-  sudo port install py38-pip
+  sudo port select --set python3 python313
 
-Set your default ``python`` to Python 3.8:
-::
+.. note:: | This means when you type ``python3`` you will use Python 3.13.
+          | If you prefer to type ``python`` (instead of ``python3``) then you can instead run:
 
-  sudo port select --set python python38
-  sudo port select --set pip pip38
-
-.. note:: You can also use ``python3`` to reference Python 3:
-          ::
+            ::
           
-            sudo port select --set python3 python38
-            sudo port select --set pip3 pip38
-          
-          ...but this will require using ``python3`` on the command-line to run
-          :ref:`pybacktrack <pybacktrack_use_a_builtin_module_script>` (instead of just ``python``).
-
-Then download a pyGPlates Mac zip file, such as `pygplates_0.36.0_py38_Darwin-x86_64.zip <https://www.earthbyte.org/download-pygplates-0-36/>`__ for Python 3.8 on an Intel Mac,
-and extract it to your home directory.
-
-Then add the unzipped location of pyGPlates to the PYTHONPATH environment variable, such as:
-::
-
-  export PYTHONPATH=~/pygplates_0.36.0_py38_Darwin-x86_64:$PYTHONPATH
-
-.. note:: The above line can be added to your ``~/.bashrc``, ``~/.bash_profile`` or ``~/.zprofile`` file
-          so that PYTHONPATH is set each time you open a new terminal window.
-            
+              sudo port select --set python python313
 
 .. _pybacktrack_pip_install_pybacktrack:
 
 Install pybacktrack
 *******************
 
-To install the latest stable version, run:
+This section demonstrates how to install pyBacktrack into the **global** Python installation.
+
+.. warning:: | We **highly** recommend :ref:`installing pyBacktrack into a virtual environment <pybacktrack_getting_started_install_into_a_venv>`.
+             | This can avoid unintended side effects on other projects or the global Python installation.
+
+On **macOS** and **Linux**, to install the latest stable version of pyBacktrack type the following in a terminal:
+::
+
+  python3 -m pip install pybacktrack
+
+.. note:: If ``python3`` doesn't work then try ``python``.
+
+On **Windows**, to install the latest stable version of pyBacktrack type the following in a command window:
+::
+
+  py -m pip install pybacktrack
+
+.. note:: On the Windows platform, ``py`` installs into the *default* version of Python (if you have multiple Python installations).
+          However you can install into a specific Python version. For example, to install into Python 3.13 replace ``py`` with ``py -3.13``.
+
+.. _pybacktrack_getting_started_install_into_a_venv:
+
+Install into a virtual environment
+""""""""""""""""""""""""""""""""""
+
+This section demonstrates how to install the latest *stable* version of pyBacktrack into a new `virtual environment <https://docs.python.org/3/tutorial/venv.html>`_.
+
+In the following example, we create and *activate* a Python environment named ``pybacktrack_venv`` that will contain pyBacktrack (and all its dependencies except ``gmt``).
+This will create a sub-directory called ``pybacktrack_venv`` in the current directory.
+
+On **macOS** and **Linux**:
+::
+
+  python3 -m venv pybacktrack_venv
+  source pybacktrack_venv/bin/activate
+
+.. note:: If ``python3`` doesn't work then try ``python``.
+
+On **Windows**:
+::
+  
+  py -m venv pybacktrack_venv
+  pybacktrack_venv\Scripts\activate.bat
+
+.. note:: On the Windows platform, ``py`` creates a virtual environment that uses the *default* version of Python (if you have multiple Python installations).
+  However you can create an environment with a specific Python version. For example, for Python 3.13 replace ``py`` with ``py -3.13``.
+
+Then you can install pyBacktrack into the *activated* environment with:
 ::
 
   python -m pip install pybacktrack
 
-.. warning:: | On Mac systems, when using `Macports <https://www.macports.org/>`__, it might be better to install to the
-               local user install directory with ``python -m pip install --user pybacktrack`` to avoid confusing Macports
-               (which installs to the system install directory).
-             | And on linux systems, if you have admin privileges, you can install to the system install directory with ``sudo python -m pip install pybacktrack``.
-
-.. note:: We generally recommend using ``python -m pip install pybacktrack`` instead of ``pip install pybacktrack`` to ensure ``pybacktrack`` is installed
-          into the ``python`` you are actually using. For example, when using Conda Python it might be that ``python`` executes the Conda Python interpreter
-          but ``pip`` installs into the system Python (eg, because the base Conda environment is not activated).
-
-If you already have ``pybacktrack`` installed and would like to upgrade to the latest version then use the ``--upgrade`` flag:
+...or if you have an older version of ``pybacktrack`` already installed, then use the ``--upgrade`` flag to get the latest version:
 ::
 
   python -m pip install --upgrade pybacktrack
 
-To install the latest development version (requires Git on local system), run:
+.. note:: Once a virtual environment has been *activated* you can use ``python`` on **all** platforms.
+  In other words, you do **not** need to use ``python3`` on macOS and Linux, or ``py`` on Windows.
+
+| Now you can use pyBacktrack.
+| For example, to see the pyBacktrack version:
+
+::
+
+  python -c "import pybacktrack; print(pybacktrack.__version__)"
+
+.. _pybacktrack_getting_started_install_latest_dev_version:
+
+Install latest *development* version
+""""""""""""""""""""""""""""""""""""
+
+Up until now, we've been installing the latest *stable* version of pyBacktrack.
+There is also the latest *development* version that contains any updates since the latest *stable* version.
+These updates are in development, and have not necessarily been tested or documented.
+
+To install the latest *development* version, run:
 ::
 
   python -m pip install "git+https://github.com/EarthByte/pyBacktrack.git"
 
-.. note:: | You may need to update your `Git` if you receive an error ending with ``tlsv1 alert protocol version``.
-          | This is apparently due to an `update on GitHub <https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed>`__.
+.. note:: You'll first need to `install git <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_ (if you don't already have it).
 
-...or download the `pyBacktrack source code <https://github.com/EarthByte/pyBacktrack>`__, extract to a local directory and run:
+          If you already have it, but are getting an error ending with "*tlsv1 alert protocol version*", then you may need to update your ``git``
+          (this is apparently due to an `update on GitHub <https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed>`__).
+
+...or you can download the `pyBacktrack source code <https://github.com/EarthByte/pyBacktrack>`__, extract it to a local directory, and run:
 ::
 
   python -m pip install <path-to-local-directory>
 
-.. note:: Installing `pyBacktrack` will automatically install the `NumPy` and `SciPy` :ref:`requirements <pybacktrack_requirements>`.
-          However, as mentioned in :ref:`requirements <pybacktrack_requirements>`, `GMT` and `pyGPlates` still need to be manually installed.
+.. note:: This assumes a virtual environment has already been *activated* as described in :ref:`pybacktrack_getting_started_install_into_a_venv`.
+          Otherwise you might need to replace ``python`` with ``python3`` (on macOS and Linux) or ``py`` (on Windows).
 
 .. _pybacktrack_install_using_docker:
 
@@ -220,7 +260,7 @@ Using Docker
 ^^^^^^^^^^^^
 
 This method of running ``pybacktrack`` relies on `Docker <https://www.docker.com/>`__, so before installing
-the ``pybacktrack`` docker image, ensure you have installed `Docker <https://www.docker.com/>`__.
+the ``pybacktrack`` docker image, ensure you have installed Docker.
 
 .. note:: | On Windows platforms you can install `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`__.
             Note that `Docker Toolbox <https://docs.docker.com/toolbox/overview/>`__ has been deprecated (and now *Docker Desktop for Windows* is recommended).
@@ -231,7 +271,7 @@ Once Docker is installed, open a terminal (command-line interface).
 
 .. note:: | For `Docker Desktop for Windows <https://docs.docker.com/docker-for-windows/install/>`__ and
             `Docker Desktop for Mac <https://docs.docker.com/docker-for-mac/install/>`__ this a regular command-line terminal.
-          | Also on Linux systems this a regular command-line terminal.
+          | And on Linux systems this also is a regular command-line terminal.
 
 To install the ``pybacktrack`` docker image, type:
 
@@ -239,15 +279,15 @@ To install the ``pybacktrack`` docker image, type:
 
     docker pull earthbyte/pybacktrack
 
-To run the docker image:
+To run the docker image, type:
 
 .. code-block:: none
 
     docker run -it --rm -p 18888:8888 -w /usr/src/pybacktrack earthbyte/pybacktrack
 
-| This should bring up a command prompt inside the running docker container.
+| This should bring up a command prompt **inside** the running docker container.
 | The current working directory should be ``/usr/src/pybacktrack/``.
-| It should have a ``pybacktrack_examples`` sub-directory containing test data.
+| It should have a ``pybacktrack_examples`` sub-directory containing example data.
 
 .. note:: On Linux systems you may have to use `sudo` when running `docker` commands. For example:
           ::
@@ -315,7 +355,7 @@ The following command installs the supplementary scripts to a new sub-directory 
 
     python -c "import pybacktrack; pybacktrack.install_supplementary()"
 
-.. note:: Like :ref:`the examples <pybacktrack_install_examples>` you can specify your own sub-directory.
+.. note:: Similar to :ref:`installing the examples <pybacktrack_install_examples>`, you can specify your own sub-directory (to the ``install_supplementary()`` function).
 
 .. _pybacktrack_a_backtracking_example:
 
