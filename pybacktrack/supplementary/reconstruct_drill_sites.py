@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import os
 import os.path
+from pathlib import Path
 import pybacktrack
 import pygplates
 import sys
@@ -15,8 +16,13 @@ import sys
 
 
 # Required pygplates version.
-# Need version 0.29 to use 'default_anchor_plate_id' argument for RotationModel.
-PYGPLATES_VERSION_REQUIRED = pygplates.Version(29)
+#
+# Need version 1.0 to use 'pygplates.ReconstructModel', etc.
+PYGPLATES_VERSION_REQUIRED = pygplates.Version(1, 0)
+
+# The default COB features.
+DEFAULT_COB_FILENAME = Path(__file__).parent / 'EarthByte_global_COBs_2024.gpmlz'
+
 
 def reconstruct_drill_sites(
         drill_site_files,           # sequence of drill site filenames
@@ -24,15 +30,21 @@ def reconstruct_drill_sites(
         static_polygon_features,    # any combination of features, feature collection and files
         output_filenames,
         end_time,
+        *,
         start_time = 0,
         time_increment = 1,
-        anchor_plate_id=0):
-    """Reconstruct the present-day location of one or more drill sites.
+        anchor_plate_id=0,
+        output_distance_to_cobs=False,
+        cob_features=DEFAULT_COB_FILENAME):  # any combination of features, feature collection and files
+    """Reconstruct the present-day location of one or more drill sites (and optionally calculate distance to COBs).
     
     Read in one or more drill sites and reconstruct each drill site location
     (by assigning a plate ID using static polygons and reconstructing using rotation files)
     through a range of times (but not older than the age of the oldest stratigraphic layer at the drill site)
-    and output the reconstructed lon/lat locations to text files (a separate file for each drill site).
+    and output the reconstructed lon/lat locations and time to text files (a separate file for each drill site).
+
+    Also, optionally calculate distance from each reconstructed drill site location to reconstructed
+    continental-oceanic boundaries (COBs) at each time step, and output as a 4th column.
     """
     
     # Check the imported pygplates version.
@@ -52,6 +64,9 @@ def reconstruct_drill_sites(
     # Static polygons partitioner used to assign plate IDs to the drill sites.
     plate_partitioner = pygplates.PlatePartitioner(static_polygon_features, rotation_model)
 
+    # Prepare to reconstruct all COBs (if we're going to calculate distance to COBs).
+    if output_distance_to_cobs:
+        cob_reconstruct_model = pygplates.ReconstructModel(cob_features, rotation_model)
 
     # Iterate over the drill sites.
     for file_index, drill_site_filename in enumerate(drill_site_files):
@@ -105,6 +120,12 @@ def reconstruct_drill_sites(
             drill_site_output_file.write('# Site longitude: {}'.format(drill_site.longitude) + os.linesep)  # site longitude
             drill_site_output_file.write('# Site latitude: {}'.format(drill_site.latitude) + os.linesep)  # site longitude
             drill_site_output_file.write('#' + os.linesep)
+
+            # Write column headers.
+            drill_site_output_file.write('# paleo_longitude  paleo_latitude  time')
+            if output_distance_to_cobs:
+                drill_site_output_file.write('  distance_to_COBs(kms)')
+            drill_site_output_file.write(os.linesep)
             
             # Reconstruct the drill site and write reconstructed locations to output file.
             drill_site_output_writer = csv.writer(drill_site_output_file, delimiter=' ')
@@ -115,9 +136,31 @@ def reconstruct_drill_sites(
                 # Reconstruct drill site to current time.
                 reconstructed_drill_site_location = rotation * drill_site_location
                 reconstructed_drill_site_latitude, reconstructed_drill_site_longitude = reconstructed_drill_site_location.to_lat_lon()
+
+                # Calculate nearest distance from reconstructed drill site to all reconstructed COBs (if requested).
+                if output_distance_to_cobs:
+                    distance_to_all_cobs = None
+                    for cob_reconstructed_geometry in cob_reconstruct_model.reconstruct_snapshot(time).get_reconstructed_geometries():
+                        # Get the minimum distance from reconstructed drill site location to the current reconstructed COB geometry.
+                        distance_to_cob = pygplates.GeometryOnSphere.distance(
+                                reconstructed_drill_site_location,
+                                cob_reconstructed_geometry.get_reconstructed_geometry(),
+                                distance_to_all_cobs)
+                        # If the current COB is nearer than all previous COBs.
+                        if distance_to_cob is not None:
+                            distance_to_all_cobs = distance_to_cob
+                    # If there were no reconstructed COBs (for some reason) then set to maximum distance across globe (in radians).
+                    if distance_to_all_cobs is None:
+                        distance_to_all_cobs = np.pi
                 
-                # Write reconstructed location to output file.
-                drill_site_output_writer.writerow((reconstructed_drill_site_longitude, reconstructed_drill_site_latitude, time))
+                # Determine which columns go into the row.
+                row = (reconstructed_drill_site_longitude, reconstructed_drill_site_latitude, time)
+                if output_distance_to_cobs:
+                    # Add distance-to-COBs (in kms) as last column.
+                    row = row + (distance_to_all_cobs * pygplates.Earth.mean_radius_in_kms,)
+                
+                # Write the row to the output file.
+                drill_site_output_writer.writerow(row)
 
 
 if __name__ == '__main__':
@@ -134,13 +177,16 @@ if __name__ == '__main__':
     
     def main():
         
-        __description__ = """Reconstruct the present-day location of one or more drill sites.
+        __description__ = """Reconstruct the present-day location of one or more drill sites (and optionally calculate distance to COBs).
     
     Read in one or more drill sites and reconstruct each drill site location
     (by assigning a plate ID using static polygons and reconstructing using rotation files)
     through a range of times (but not older than the age of the oldest stratigraphic layer at the drill site)
-    and output the reconstructed lon/lat locations to text files (a separate file for each drill site, either
+    and output the reconstructed lon/lat locations and time to text files (a separate file for each drill site, either
     specified on command-line or, if not specified, then matching drill site filename with '{}' suffix appended).
+
+    Also, optionally calculate distance from each reconstructed drill site location to reconstructed
+    continental-oceanic boundaries (COBs) at each time step, and output as a 4th column.
     
     NOTE: Separate the positional and optional arguments with '--' (workaround for bug in argparse module).
     For example...
@@ -182,9 +228,9 @@ if __name__ == '__main__':
             default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES,
             metavar='rotation_filename',
             help='R|One or more rotation files used to reconstruct the drill site(s).\n'
-                'Defaults to the rotations of the default reconstruction model built into pyBacktrack :\n'
-                '{}.\n'
-                .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES))
+                 'Defaults to the rotations of the default reconstruction model built into pyBacktrack :\n'
+                 '{}.\n'
+                 .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_ROTATION_FILENAMES))
         
         # Allow user to override default static polygon filename used to assign plate IDs to the drill site(s).
         #
@@ -194,9 +240,9 @@ if __name__ == '__main__':
             default=pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME,
             metavar='static_polygon_filename',
             help='R|File containing static polygons used to assign plate IDs to the drill site(s).\n'
-                'Defaults to the static polygons of the default reconstruction model built into pyBacktrack:\n'
-                '"{}".\n'
-                .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME))
+                 'Defaults to the static polygons of the default reconstruction model built into pyBacktrack:\n'
+                 '"{}".\n'
+                 .format(pybacktrack.bundle_data.BUNDLE_RECONSTRUCTION_STATIC_POLYGON_FILENAME))
         
         # Time range and increment.
         parser.add_argument('-s', '--start_time',
@@ -212,6 +258,21 @@ if __name__ == '__main__':
         parser.add_argument('-a', '--anchor', type=parse_positive_integer, default=0,
                 dest='anchor_plate_id',
                 help='Anchor plate id used when reconstructing drill site locations. Defaults to zero.')
+
+        # Optionally output distance to COBs.
+        parser.add_argument(
+            '-od', '--output_distance_to_cobs', action='store_true',
+            help='Optionally calculate distance from each reconstructed drill site location to the reconstructed '
+                 'continental-oceanic boundaries (COBs) at each time step, and output as a 4th column.')
+        
+        parser.add_argument(
+            '-cob', '--cob_filenames', type=str, nargs='+',
+            metavar='cob_filename',
+            help='R|One or more files containing COBs.\n'
+                 'Note that this is ignored unless "--output_distance_to_cobs" is also specified.\n'
+                 'Defaults to the supplementary COBs in:\n'
+                 '"{}".\n'
+                 .format(DEFAULT_COB_FILENAME))
         
         parser.add_argument('-o', '--output_filenames',
             type=str, nargs='+', metavar='output_filename',
@@ -227,6 +288,11 @@ if __name__ == '__main__':
         
         # Parse command-line options.
         args = parser.parse_args()
+
+        if args.cob_filenames:
+            cob_filenames = args.cob_filenames
+        else:
+            cob_filenames = DEFAULT_COB_FILENAME
 
         if not args.output_filenames:
             output_filenames = []
@@ -245,9 +311,11 @@ if __name__ == '__main__':
             args.static_polygon_filename,
             output_filenames,
             args.end_time,
-            args.start_time,
-            args.time_increment,
-            args.anchor_plate_id)
+            start_time=args.start_time,
+            time_increment=args.time_increment,
+            anchor_plate_id=args.anchor_plate_id,
+            output_distance_to_cobs=args.output_distance_to_cobs,
+            cob_features=cob_filenames)
 
 
     import traceback
