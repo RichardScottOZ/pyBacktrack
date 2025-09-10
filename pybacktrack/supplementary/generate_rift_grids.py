@@ -106,12 +106,18 @@ def generate_rift_parameter_points(
         # Read the list of default rotation filenames.
         rotation_filenames = _read_list_of_files(DEFAULT_DEFORMING_MODEL_ROTATION_FILES)
 
-    # Read the age grid file and only include those that have NaN values (representing non-oceanic points).
-    #print ('Reading continent points...'); sys.stdout.flush()
-    continent_points = [(sample[0], sample[1]) for sample in _gmt_grdtrack(input_points, age_grid_filename) if math.isnan(sample[2])]
+    # Read the age grid file.
+    print ('Reading age grid...'); sys.stdout.flush()
+    age_grid_samples = _gmt_grdtrack(input_points, age_grid_filename)
+
+    # Mark whether each input point is on continental crust (has a NaN value in age grid).
+    input_point_is_continental = [math.isnan(sample[2]) for sample in age_grid_samples]
+
+    continent_points = [input_point for input_point_index, input_point in enumerate(input_points)
+                        if input_point_is_continental[input_point_index]]
 
     # Read the total sediment thickness grid file (at continent locations) and mark whether location is submerged (has non-NaN grid value).
-    #print ('Reading submerged continent points...'); sys.stdout.flush()
+    print ('Reading total sediment thickness grid...'); sys.stdout.flush()
     continent_point_is_submerged = [not math.isnan(sample[2]) for sample in _gmt_grdtrack(continent_points, total_sediment_thickness_filename)]
 
     #
@@ -120,52 +126,12 @@ def generate_rift_parameter_points(
     # We calculate at both submerged and non-submerged locations since we later expand these rift parameters to
     # *submerged* locations outside (but near) deforming regions.
     #
-
-    # If using a single CPU then just process all continent points in one call.
-    #print ('Reconstructing', len(continent_points), 'continent points...'); sys.stdout.flush()
-    if not use_all_cpus:
-        continent_rift_parameter_points_in_deforming_regions = find_continent_rift_parameters_in_deforming_regions(
-                continent_points,
-                topology_filenames,
-                rotation_filenames,
-                oldest_rift_start_time)
-
-    else:  # Use 'multiprocessing' pools to distribute across CPUs...
-        
-        # If 'use_all_cpus' is a bool (and therefore must be True) then use all available CPUs...
-        if isinstance(use_all_cpus, bool):
-            try:
-                num_cpus = multiprocessing.cpu_count()
-            except NotImplementedError:
-                num_cpus = 1
-        # else 'use_all_cpus' is a positive integer specifying the number of CPUs to use...
-        elif isinstance(use_all_cpus, int) and use_all_cpus > 0:
-            num_cpus = use_all_cpus
-        else:
-            raise TypeError('{} is neither a bool nor a positive integer'.format(use_all_cpus))
-        
-        # Divide the points into a number of groups equal to twice the number of CPUs in case some groups of points take longer to process than others.
-        num_point_groups = 2 * num_cpus
-        num_points_per_group = math.ceil(float(len(continent_points)) / num_point_groups)
-
-        # Distribute the groups of points across the multiprocessing pool.
-        with multiprocessing.Pool(num_cpus) as pool:
-            continent_rift_parameter_points_in_deforming_regions_lists = pool.map(
-                    partial(
-                        find_continent_rift_parameters_in_deforming_regions,
-                        topology_filenames=topology_filenames,
-                        rotation_filenames=rotation_filenames,
-                        oldest_rift_start_time=oldest_rift_start_time),
-                    (
-                        continent_points[
-                            group_index * num_points_per_group :
-                            (group_index + 1) * num_points_per_group]
-                                    for group_index in range(num_point_groups)
-                    ),
-                    1) # chunksize
-
-        continent_rift_parameter_points_in_deforming_regions = list(
-            itertools.chain.from_iterable(continent_rift_parameter_points_in_deforming_regions_lists))
+    continent_rift_parameter_points_in_deforming_regions = find_continent_rift_parameters_in_deforming_regions(
+            continent_points,
+            topology_filenames,
+            rotation_filenames,
+            oldest_rift_start_time,
+            use_all_cpus)
 
     #
     # Expand the rift parameters in deforming regions to nearby non-deforming areas, and only consider *submerged* regions.
@@ -195,11 +161,32 @@ def generate_rift_parameter_points(
     #
     # For each non-deforming point find the closest deforming point and use its rift start/end times.
     #
+    submerged_continent_rift_parameter_points_in_non_deforming_regions = expand_continent_rift_parameters_into_non_deforming_regions(
+            submerged_continent_non_deforming_points,
+            continent_deforming_points,
+            continent_deforming_rift_start_end_times,
+            rift_expansion_degrees=None,
+            use_all_cpus=use_all_cpus)
+
+    submerged_continent_rift_parameter_points.extend(submerged_continent_rift_parameter_points_in_non_deforming_regions)
+
+    return submerged_continent_rift_parameter_points
+def find_continent_rift_parameters_in_deforming_regions(
+        continent_points,
+        topology_filenames,
+        rotation_filenames,
+        oldest_rift_start_time,
+        use_all_cpus):
+    
+    print ('Reconstructing', len(continent_points), 'continent points...'); sys.stdout.flush()
+
+    # If using a single CPU then just process all continent points in one call.
     if not use_all_cpus:
-        submerged_continent_rift_parameter_points_in_non_deforming_regions = expand_continent_rift_parameters_into_non_deforming_regions(
-                submerged_continent_non_deforming_points,
-                continent_deforming_points,
-                continent_deforming_rift_start_end_times)
+        continent_rift_parameter_points_in_deforming_regions = _find_continent_rift_parameters_in_deforming_regions(
+                continent_points,
+                topology_filenames,
+                rotation_filenames,
+                oldest_rift_start_time)
 
     else:  # Use 'multiprocessing' pools to distribute across CPUs...
         
@@ -215,35 +202,33 @@ def generate_rift_parameter_points(
         else:
             raise TypeError('{} is neither a bool nor a positive integer'.format(use_all_cpus))
         
-        # Divide the non-deforming points into a number of groups equal to twice the number of CPUs in case some groups of points take longer to process than others.
-        # Update: Using 8 times num_cpus since some point groups take quite a bit longer than others.
-        num_point_groups = 8 * num_cpus
-        num_points_per_group = math.ceil(float(len(submerged_continent_non_deforming_points)) / num_point_groups)
+        # Divide the points into a number of groups equal to twice the number of CPUs in case some groups of points take longer to process than others.
+        num_point_groups = 2 * num_cpus
+        num_points_per_group = math.ceil(float(len(continent_points)) / num_point_groups)
 
         # Distribute the groups of points across the multiprocessing pool.
         with multiprocessing.Pool(num_cpus) as pool:
-            submerged_continent_rift_parameter_points_in_non_deforming_regions_lists = pool.map(
+            continent_rift_parameter_points_in_deforming_regions_lists = pool.map(
                     partial(
-                        expand_continent_rift_parameters_into_non_deforming_regions,
-                        continent_deforming_points=continent_deforming_points,
-                        continent_deforming_rift_start_end_times=continent_deforming_rift_start_end_times),
+                        _find_continent_rift_parameters_in_deforming_regions,
+                        topology_filenames=topology_filenames,
+                        rotation_filenames=rotation_filenames,
+                        oldest_rift_start_time=oldest_rift_start_time),
                     (
-                        submerged_continent_non_deforming_points[
+                        continent_points[
                             group_index * num_points_per_group :
                             (group_index + 1) * num_points_per_group]
                                     for group_index in range(num_point_groups)
                     ),
                     1) # chunksize
 
-        submerged_continent_rift_parameter_points_in_non_deforming_regions = list(
-            itertools.chain.from_iterable(submerged_continent_rift_parameter_points_in_non_deforming_regions_lists))
-
-    submerged_continent_rift_parameter_points.extend(submerged_continent_rift_parameter_points_in_non_deforming_regions)
-
-    return submerged_continent_rift_parameter_points
+        continent_rift_parameter_points_in_deforming_regions = list(
+            itertools.chain.from_iterable(continent_rift_parameter_points_in_deforming_regions_lists))
+    
+    return continent_rift_parameter_points_in_deforming_regions
 
 
-def find_continent_rift_parameters_in_deforming_regions(
+def _find_continent_rift_parameters_in_deforming_regions(
         initial_points,
         topology_filenames,
         rotation_filenames,
@@ -392,6 +377,63 @@ def find_continent_rift_parameters_in_deforming_regions(
 
 
 def expand_continent_rift_parameters_into_non_deforming_regions(
+        continent_non_deforming_points,
+        continent_deforming_points,
+        continent_deforming_rift_start_end_times,
+        rift_expansion_degrees,
+        use_all_cpus):
+    
+    print ('Expanding', len(continent_non_deforming_points), 'non-deforming points...'); sys.stdout.flush()
+    
+    if not use_all_cpus:
+        rift_parameter_points_in_non_deforming_regions = _expand_continent_rift_parameters_into_non_deforming_regions(
+                continent_non_deforming_points,
+                continent_deforming_points,
+                continent_deforming_rift_start_end_times,
+                rift_expansion_degrees)
+
+    else:  # Use 'multiprocessing' pools to distribute across CPUs...
+        
+        # If 'use_all_cpus' is a bool (and therefore must be True) then use all available CPUs...
+        if isinstance(use_all_cpus, bool):
+            try:
+                num_cpus = multiprocessing.cpu_count()
+            except NotImplementedError:
+                num_cpus = 1
+        # else 'use_all_cpus' is a positive integer specifying the number of CPUs to use...
+        elif isinstance(use_all_cpus, int) and use_all_cpus > 0:
+            num_cpus = use_all_cpus
+        else:
+            raise TypeError('{} is neither a bool nor a positive integer'.format(use_all_cpus))
+        
+        # Divide the non-deforming points into a number of groups equal to twice the number of CPUs in case some groups of points take longer to process than others.
+        # Update: Using 8 times num_cpus since some point groups take quite a bit longer than others.
+        num_point_groups = 8 * num_cpus
+        num_points_per_group = math.ceil(float(len(continent_non_deforming_points)) / num_point_groups)
+
+        # Distribute the groups of points across the multiprocessing pool.
+        with multiprocessing.Pool(num_cpus) as pool:
+            rift_parameter_points_in_non_deforming_regions_lists = pool.map(
+                    partial(
+                        _expand_continent_rift_parameters_into_non_deforming_regions,
+                        continent_deforming_points=continent_deforming_points,
+                        continent_deforming_rift_start_end_times=continent_deforming_rift_start_end_times,
+                        rift_expansion_degrees=rift_expansion_degrees),
+                    (
+                        continent_non_deforming_points[
+                            group_index * num_points_per_group :
+                            (group_index + 1) * num_points_per_group]
+                                    for group_index in range(num_point_groups)
+                    ),
+                    1) # chunksize
+
+        rift_parameter_points_in_non_deforming_regions = list(
+            itertools.chain.from_iterable(rift_parameter_points_in_non_deforming_regions_lists))
+    
+    return rift_parameter_points_in_non_deforming_regions
+
+
+def _expand_continent_rift_parameters_into_non_deforming_regions(
         continent_non_deforming_points,
         continent_deforming_points,
         continent_deforming_rift_start_end_times,
@@ -632,24 +674,26 @@ if __name__ == '__main__':
         topology_argument_group.add_argument(
             '-ml', '--topology_list_filename', type=str,
             metavar='topology_list_filename',
-            help='File containing list of topology filenames (to create topological model with). '
-                 'If no topology list file (or topology files) specified then defaults to {0}'.format(DEFAULT_DEFORMING_MODEL_TOPOLOGY_FILES))
+            help='R|File containing list of topology filenames (to create topological model with).\n'
+                 'If no topology list file (or topology files) specified then defaults to "{0}".'.format(DEFAULT_DEFORMING_MODEL_TOPOLOGY_FILES))
         topology_argument_group.add_argument(
             '-m', '--topology_filenames', type=str, nargs='+',
             metavar='topology_filename',
-            help='One or more topology files (to create topological model with).')
+            help='R|One or more topology files (to create topological model with).\n'
+                 'If no topology files (or topology list file) specified then defaults to files listed in "{0}".'.format(DEFAULT_DEFORMING_MODEL_TOPOLOGY_FILES))
         
         # Can optionally specify rotation filenames.
         rotation_argument_group = parser.add_mutually_exclusive_group()
         rotation_argument_group.add_argument(
             '-rl', '--rotation_list_filename', type=str,
             metavar='rotation_list_filename',
-            help='File containing list of rotation filenames (to create topological model with). '
-                 'If no rotation list file (or rotation files) specified then defaults to {0}'.format(DEFAULT_DEFORMING_MODEL_ROTATION_FILES))
+            help='R|File containing list of rotation filenames (to create topological model with).\n'
+                 'If no rotation list file (or rotation files) specified then defaults to "{0}".'.format(DEFAULT_DEFORMING_MODEL_ROTATION_FILES))
         rotation_argument_group.add_argument(
             '-r', '--rotation_filenames', type=str, nargs='+',
             metavar='rotation_filename',
-            help='One or more rotation files (to create topological model with).')
+            help='R|One or more rotation files (to create topological model with).\n'
+                 'If no rotation files (or rotation list file) specified then defaults to files listed in "{0}".'.format(DEFAULT_DEFORMING_MODEL_ROTATION_FILES))
 
         parser.add_argument(
             '-t', '--oldest_rift_start_time', type=int, default=DEFAULT_OLDEST_RIFT_START_TIME,
@@ -706,8 +750,7 @@ if __name__ == '__main__':
         # Generate a global latitude/longitude grid of points (with the requested grid spacing).
         input_points = generate_input_points_grid(grid_spacing_degrees)
         
-        # Generate rift parameter points on submerged continental crust
-        # (at non-NaN grid sample locations in total sediment thickness grid).
+        # Generate rift parameter points.
         rift_parameter_points = generate_rift_parameter_points(
                 input_points,
                 args.total_sediment_thickness_filename,
@@ -725,7 +768,7 @@ if __name__ == '__main__':
             rift_end_points.append((lon, lat, rift_end_time))
 
         # Create the rift parameter grids.
-        #print ('Writing rift start/end grids...')
+        print ('Writing rift start/end grids...')
         _gmt_nearneighbor(rift_start_points, grid_spacing_degrees, args.rift_start_time_grid_filename)
         _gmt_nearneighbor(rift_end_points, grid_spacing_degrees, args.rift_end_time_grid_filename)
         
