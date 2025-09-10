@@ -51,21 +51,17 @@ DEFAULT_GRID_SPACING_MINUTES = 60.0 * DEFAULT_GRID_SPACING_DEGREES
 
 def generate_rift_parameter_points(
         input_points,
-        total_sediment_thickness_filename,
         age_grid_filename,
         topology_filenames=None,
         rotation_filenames=None,
         oldest_rift_start_time=DEFAULT_OLDEST_RIFT_START_TIME,
         use_all_cpus=False):
-    """Generate rift parameter points on submerged continental crust (at non-NaN grid sample locations in total sediment thickness grid).
+    """Generate rift parameter points.
     
     Parameters
     ----------
     input_points : sequence of (longitude, latitude) tuples
         The point locations to generate rift grid points.
-    total_sediment_thickness_filename : string
-        Total sediment thickness filename.
-        Used to determine which points on continental crust are submerged (at present day).
     age_grid_filename : string
         Age grid filename.
         Used to obtain location of continental crust (where age grid is NaN).
@@ -116,15 +112,10 @@ def generate_rift_parameter_points(
     continent_points = [input_point for input_point_index, input_point in enumerate(input_points)
                         if input_point_is_continental[input_point_index]]
 
-    # Read the total sediment thickness grid file (at continent locations) and mark whether location is submerged (has non-NaN grid value).
-    print ('Reading total sediment thickness grid...'); sys.stdout.flush()
-    continent_point_is_submerged = [not math.isnan(sample[2]) for sample in _gmt_grdtrack(continent_points, total_sediment_thickness_filename)]
-
     #
     # Calculate rift parameters in deforming regions on continental crust.
     #
-    # We calculate at both submerged and non-submerged locations since we later expand these rift parameters to
-    # *submerged* locations outside (but near) deforming regions.
+    # We later expand these rift parameters to non-deforming regions.
     #
     continent_rift_parameter_points_in_deforming_regions = find_continent_rift_parameters_in_deforming_regions(
             continent_points,
@@ -134,43 +125,60 @@ def generate_rift_parameter_points(
             use_all_cpus)
 
     #
-    # Expand the rift parameters in deforming regions to nearby non-deforming areas, and only consider *submerged* regions.
+    # Expand the rift parameters in deforming regions to nearby non-deforming areas.
     #
 
-    submerged_continent_rift_parameter_points = []
+    rift_parameter_points = []
 
-    submerged_continent_non_deforming_points = []
-    # The rift parameters to be expanded are currently on submerged and non-submerged continental crust.
+    # Non-deforming points include oceanic points (since we only looked for continental points in deforming regions).
+    #
+    # Note: Later we'll also add in continental points that are outside deforming regions.
+    non_deforming_points = [input_point for input_point_index, input_point in enumerate(input_points)
+                            if not input_point_is_continental[input_point_index]]
+    
+    # The rift parameters to be expanded are currently on continental crust.
     continent_deforming_points = []
     continent_deforming_rift_start_end_times = []
     
-    # Separate deforming from non-deforming points.
+    # On continental crust, separate deforming from non-deforming points.
     # Non-deforming points have no rift start/end times.
-    for point_index, (lon, lat, rift_start_end_times) in enumerate(continent_rift_parameter_points_in_deforming_regions):
+    for lon, lat, rift_start_end_times in continent_rift_parameter_points_in_deforming_regions:
         if rift_start_end_times is None:
-            if continent_point_is_submerged[point_index]:
-                submerged_continent_non_deforming_points.append((lon, lat))
+            non_deforming_points.append((lon, lat))
         else:
             continent_deforming_points.append((lon, lat))
             continent_deforming_rift_start_end_times.append(rift_start_end_times)
-            # Output the final rift parameters on submerged continental crust in deforming regions.
-            if continent_point_is_submerged[point_index]:
-                rift_start_time, rift_end_time = rift_start_end_times
-                submerged_continent_rift_parameter_points.append((lon, lat, rift_start_time, rift_end_time))
+            # Output the final rift parameters on continental crust in deforming regions.
+            rift_start_time, rift_end_time = rift_start_end_times
+            rift_parameter_points.append((lon, lat, rift_start_time, rift_end_time))
 
     #
     # For each non-deforming point find the closest deforming point and use its rift start/end times.
     #
-    submerged_continent_rift_parameter_points_in_non_deforming_regions = expand_continent_rift_parameters_into_non_deforming_regions(
-            submerged_continent_non_deforming_points,
+    # Note: This means the final rift start/end time grids will have *global* coverage.
+    #       This means the rift grids will work with any age grid explicitly passed to pyBacktrack by the user,
+    #       regardless of where the age grid's continental-oceanic boundary is located
+    #       (eg, when user is backtracking, or generating paleobathymetry grids).
+    #       This is because points outside the age grid are continental crust and we want the rift start/end grids
+    #       to cover that entire area (regardless of the continental-oceanic boundary).
+    #       Previously we excluded oceanic points, which depended on our the age grid specified to this script, and
+    #       might not match an age grid passed to pyBacktrack by the user.
+    #       And we only considered *submerged* continental crust, that is inside a total sediment thickness grid
+    #       specified to this script, but the pyBacktrack user could specify their own sediment thickness grid.
+    #       By making the rift start/end grids have *global* coverage we avoid these problems.
+    #
+    rift_parameter_points_in_non_deforming_regions = expand_continent_rift_parameters_into_non_deforming_regions(
+            non_deforming_points,
             continent_deforming_points,
             continent_deforming_rift_start_end_times,
             rift_expansion_degrees=None,
             use_all_cpus=use_all_cpus)
 
-    submerged_continent_rift_parameter_points.extend(submerged_continent_rift_parameter_points_in_non_deforming_regions)
+    rift_parameter_points.extend(rift_parameter_points_in_non_deforming_regions)
 
-    return submerged_continent_rift_parameter_points
+    return rift_parameter_points
+
+
 def find_continent_rift_parameters_in_deforming_regions(
         continent_points,
         topology_filenames,
@@ -467,9 +475,8 @@ def _expand_continent_rift_parameters_into_non_deforming_regions(
             [pygplates.PointOnSphere(lat, lon) for lon, lat in continent_deforming_points],
             continent_deforming_rift_start_end_times,
             distance_threshold_radians = distance_threshold_radians,
-            # Increasing this from the default of 4 to 6 noticeably improves speed for high resolution grids.
-            # For example, for 5 minute resolution grids this reduces total running time from 35 minutes to about 10 minutes...
-            subdivision_depth = 6)
+            # Increasing this from the default of 4 dramatically improves speed for high resolution grids (like 5 minute resolution)...
+            subdivision_depth = 7)
 
     continent_rift_parameter_points = []
 
@@ -650,18 +657,6 @@ if __name__ == '__main__':
                 help='The grid spacing (in minutes) of generate points in lon/lat space. '
                     'Defaults to {0} minutes.'.format(DEFAULT_GRID_SPACING_MINUTES))
         
-        # Allow user to override default total sediment thickness filename (if they don't want the one in the bundled data).
-        parser.add_argument(
-            '-s', '--total_sediment_thickness_filename', type=str,
-            default=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
-            metavar='total_sediment_thickness_filename',
-            help='R|Optional filename used to determine submerged crust.\n'
-                 'Defaults to the bundled data file "{}"\n'
-                 '(see {}).'
-                 .format(
-                        pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
-                        pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_DOC_URL))
-        
         # Allow user to override default age grid filename (if they don't want the one in the bundled data).
         parser.add_argument(
             '-a', '--age_grid_filename', type=str,
@@ -756,7 +751,6 @@ if __name__ == '__main__':
         # Generate rift parameter points.
         rift_parameter_points = generate_rift_parameter_points(
                 input_points,
-                args.total_sediment_thickness_filename,
                 args.age_grid_filename,
                 topology_filenames,
                 rotation_filenames,

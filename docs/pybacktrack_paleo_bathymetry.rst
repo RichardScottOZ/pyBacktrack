@@ -203,7 +203,16 @@ to model these complex areas with simple rifting (despite a rifting model no lon
 So that covers the *deforming* grid points on continental crust.
 Next, the *non-deforming* grid points on continental crust obtain their rift period from the nearest deforming grid points.
 This ensures that all continental crust contains a rift period and hence can be used to generate paleobathymetry grids from all present day continental crust.
-Finally, only those continental grid points that are submerged are stored in the final rift grids since we only need to backtrack submerged crust.
+
+.. note:: | In pyBacktrack ``1.4`` and older, only the continental grid points that were *submerged* were stored in the built-in rift grids,
+            since only *submerged* crust needs backtracking.
+          | However in pyBacktrack ``1.5`` onwards, the built-in rift grids have *global* coverage.
+            Here each grid point that is *not on* deforming continental crust (ie, could be oceanic or non-deforming continental) inherits the rift period of the nearest grid point *on* deforming continental crust.
+            In submerged continental regions, the rift periods are the same as in pyBacktrack ``1.4``, but we now also get rift periods outside *submerged continental* regions.
+            This avoids tying the built-in rift grids to the *default* age grid (determines which crust is *continental*) and the *default* total sediment thickness grid (determines which crust is *submerged*).
+            For example, you might specify an age grid that has a slightly different continental-oceanic boundary.
+            Or you might specify a total sediment thickness that has a slightly different coastline.
+            And in these cases you can now generate paleobathymetry grids that don't have gaps due to misalignments between, for example, your age grid boundary and the built-in rift grid boundaries (which are now boundaryless).
 
 This paragraph gives a more detailed explanation of how deformation in particular is used in ``pybacktrack/supplementary/generate_rift_grids.py``...
 The script allows one to specify a total sediment thickness grid and an age grid (defaulting to those included with pyBacktrack).

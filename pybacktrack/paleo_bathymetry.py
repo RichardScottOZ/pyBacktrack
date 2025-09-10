@@ -425,6 +425,9 @@ def reconstruct_backtrack_bathymetry(
         continental_grid_samples = _read_grid(continental_grid_samples, pybacktrack.bundle_data.BUNDLE_RIFTING_END_FILENAME, integer_input_columns=continental_grid_sample_integer_input_columns, force_positive=True)
         # Ignore continental samples with no rifting (no rift start/end times) since there is no sediment deposition without rifting and also no tectonic subsidence.
         #
+        # Update: The builtin rift start/end grids now have global coverage.
+        #         So continent samples should now always have rifting.
+        #
         # Note: The 8th and 9th values (indices 7 and 8) of each sample are the rift start and end ages.
         #       A value of NaN means there is no rifting at the sample location.
         continental_grid_samples = [grid_sample for grid_sample in continental_grid_samples

@@ -389,6 +389,7 @@ the same regardless of whether a rift *start* time was specified or not.
           generated and you must then explicitly provide the rift end time (and optionally the rift start time). However currently the rift grids cover all
           submerged continental crust (ie, where the total sediment thickness grid contains valid values but the age grid does not) and not just the areas
           that are rifting - see :ref:`rift gridding <pybacktrack_builtin_rift_gridding_procedure>` - so an error is unlikely to be generated.
+          And starting with pyBacktrack ``1.5``, the rift grids have *global* coverage, in which case this particular error should not get generated.
 
 If a rift *start* time is specified, then the stretching factor varies exponentially between the rift *start* and *end* times (assuming a constant strain rate).
 The stretching factor at the rift *start* time is ``1.0`` (since the lithosphere has not yet stretched). The stretching factor at the rift *end* time is
