@@ -466,7 +466,10 @@ def _expand_continent_rift_parameters_into_non_deforming_regions(
             [pygplates.PointOnSphere(lat, lon) for lon, lat in continent_non_deforming_points],
             [pygplates.PointOnSphere(lat, lon) for lon, lat in continent_deforming_points],
             continent_deforming_rift_start_end_times,
-            distance_threshold_radians = distance_threshold_radians)
+            distance_threshold_radians = distance_threshold_radians,
+            # Increasing this from the default of 4 to 6 noticeably improves speed for high resolution grids.
+            # For example, for 5 minute resolution grids this reduces total running time from 35 minutes to about 10 minutes...
+            subdivision_depth = 6)
 
     continent_rift_parameter_points = []
 
