@@ -24,9 +24,9 @@ import os.path
 import pybacktrack
 import pygplates
 try:
-    from ptt.utils import proximity_query
-except ImportError:
     from gplately.ptt.utils import proximity_query
+except ImportError:
+    from ptt.utils import proximity_query
 import sys
 
 

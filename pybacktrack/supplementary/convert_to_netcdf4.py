@@ -1,4 +1,8 @@
-from ptt.utils.call_system_command import call_system_command
+try:
+    from gplately.ptt.utils.call_system_command import call_system_command
+except ImportError:
+    from ptt.utils.call_system_command import call_system_command
+import sys
 import glob
 import os.path
 import re
