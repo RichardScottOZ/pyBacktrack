@@ -12,72 +12,95 @@ except ImportError:
 else:
     have_xarray = True
 
-# PyBacktrack paleobathymetry grids.
-paleo_bathymetry_pybacktrack_prefix = r'C:\Users\John\Development\Usyd\source_code\repositories\Earthbyte\pyBacktrack\pybacktrack\supplementary\paleo_bathymetry_output\paleo_bathymetry_12m_M7_RHCW18'
-paleo_bathymetry_pybacktrack_basename = 'paleo_bathymetry'
-paleo_bathymetry_pybacktrack_extension = 'nc'
-# Typically either 0 or 1.
-paleo_bathymetry_pybacktrack_decimal_places_in_time = 1
-
-# Wright paleobathymetry grids.
-paleo_bathymetry_wright_prefix = r'C:\Users\John\Development\Usyd\source_code\repositories\Earthbyte\pyBacktrack\pybacktrack\supplementary\paleo_bathymetry_Wright\Paleobathymetry_RHCW18'
-paleo_bathymetry_wright_basename = 'paleobathymetry'
-paleo_bathymetry_wright_extension = 'nc'
-# Typically either 0 or 1.
-paleo_bathymetry_wright_decimal_places_in_time = 0
-
-# Optional dynamic topography model to add to Wright paleobathymetry grids (the pybacktrack grids already have it applied).
-#
-# Can be any builtin dynamic topography model *name* supported by pyBacktrack
-# (see the list at https://pybacktrack.readthedocs.io/en/latest/pybacktrack_backtrack.html#dynamic-topography).
-#
-# Note: This can be 'None' if no dynamic topography need be applied.
-#dynamic_topography_model_name = None
-dynamic_topography_model_name = 'M7'
-
-# How far back in time to generate grids.
-max_time = 140
-time_increment = 1
-# For best results set this to the same as Wright grids (they are higher resolution at 0.1 degrees).
-merged_grid_spacing_degrees = 0.2
-
-# Merged grids.
-merged_grid_directory = os.path.join('paleo_bathymetry_output', 'merged', 'paleo_bathymetry_{0:.0f}m_M7_RHCW18'.format(merged_grid_spacing_degrees * 60.0))  # Insert grid spacing (in minutes) in output directory.
-merged_grid_basename = 'paleo_bathymetry'
-
-# Use all CPUs (if True then make sure you don't interrupt the process).
-#
-# If False then use a single CPU.
-# If True then use all CPUs (cores).
-# If a positive integer then use that many CPUs (cores).
-#
-#use_all_cpus = True
-use_all_cpus = 4
-
-
-# Create the dynamic topography model (from model name) if requested.
-if dynamic_topography_model_name:
-    dynamic_topography_model = pybacktrack.InterpolateDynamicTopography.create_from_bundled_model(dynamic_topography_model_name)
-else:
-    dynamic_topography_model = None
-
 
 def merge_paleo_bathymetry_grids(
+        max_time,
+        time_increment,
+        paleo_bathymetry_pybacktrack_filename_format,  # filename generated using str.format(time)
+        paleo_bathymetry_wright_filename_format,  # filename generated using str.format(time)
+        merged_grid_filename_format,  # filename generated using str.format(time)
+        merged_grid_spacing_degrees,
+        dynamic_topography_model_or_bundled_model_name=None,
+        # Use all CPUs (if not False then make sure you don't interrupt the process).
+        #
+        # If False then use a single CPU.
+        # If True then use all CPUs (cores).
+        # If a positive integer then use that many CPUs (cores).
+        use_all_cpus=False):
+
+    # Generate a global latitude/longitude grid of points (with the requested grid spacing).
+    input_points = _generate_input_points_grid(merged_grid_spacing_degrees)
+
+    # Create the dynamic topography model (from model name) if requested.
+    if dynamic_topography_model_or_bundled_model_name:
+        interpolate_dynamic_topography_model = pybacktrack.InterpolateDynamicTopography.create_from_model_or_bundled_model_name(dynamic_topography_model_or_bundled_model_name)
+        # Sample the dynamic topography at present day.
+        # print('Sample dynamic topography at {}...'.format(0)); sys.stdout.flush()
+        dynamic_topography_at_present_day = interpolate_dynamic_topography_model.sample(0, input_points)
+    else:
+        interpolate_dynamic_topography_model = None
+        dynamic_topography_at_present_day = None
+    
+    # Create times from present day to 'max_time'.
+    time_range = range(0, max_time+1, time_increment)
+    
+    if use_all_cpus:
+
+        # If 'use_all_cpus' is a bool (and therefore must be True) then use all available CPUs...
+        if isinstance(use_all_cpus, bool):
+            try:
+                num_cpus = multiprocessing.cpu_count()
+            except NotImplementedError:
+                num_cpus = 1
+        # else 'use_all_cpus' is a positive integer specifying the number of CPUs to use...
+        elif isinstance(use_all_cpus, int) and use_all_cpus > 0:
+            num_cpus = use_all_cpus
+        else:
+            raise TypeError('{} is neither a bool nor a positive integer'.format(use_all_cpus))
+
+        # Distribute writing of each grid to a different CPU.
+        with multiprocessing.Pool(num_cpus) as pool:
+            pool.map(
+                    partial(
+                        merge_paleo_bathymetry_grid,
+                        input_points=input_points,
+                        paleo_bathymetry_pybacktrack_filename_format=paleo_bathymetry_pybacktrack_filename_format,
+                        paleo_bathymetry_wright_filename_format=paleo_bathymetry_wright_filename_format,
+                        merged_grid_filename_format=merged_grid_filename_format,
+                        merged_grid_spacing_degrees=merged_grid_spacing_degrees,
+                        interpolate_dynamic_topography_model=interpolate_dynamic_topography_model,
+                        dynamic_topography_at_present_day=dynamic_topography_at_present_day),
+                    time_range,
+                    1) # chunksize
+
+    else:
+        for time in time_range:
+            merge_paleo_bathymetry_grid(
+                    time,
+                    input_points,
+                    paleo_bathymetry_pybacktrack_filename_format,
+                    paleo_bathymetry_wright_filename_format,
+                    merged_grid_filename_format,
+                    merged_grid_spacing_degrees,
+                    interpolate_dynamic_topography_model,
+                    dynamic_topography_at_present_day)
+
+
+def merge_paleo_bathymetry_grid(
         time,
         input_points,
+        paleo_bathymetry_pybacktrack_filename_format,  # filename generated using str.format(time)
+        paleo_bathymetry_wright_filename_format,  # filename generated using str.format(time)
+        merged_grid_filename_format,  # filename generated using str.format(time)
+        merged_grid_spacing_degrees,
+        interpolate_dynamic_topography_model,
         dynamic_topography_at_present_day):
     
     # print('Time: {}'.format(time)); sys.stdout.flush()
 
     # Paleo bathymetry grids to merge (pybacktrack and Wright).
-    #
-    # Note that pybacktrack uses 1 decimal place for the time in the filename, whereas Wright does not.
-    paleo_bathymetry_pybacktrack_filename = os.path.join(
-            paleo_bathymetry_pybacktrack_prefix,
-            '{0}_{1:.{2}f}.{3}'.format(paleo_bathymetry_pybacktrack_basename, time, paleo_bathymetry_pybacktrack_decimal_places_in_time, paleo_bathymetry_pybacktrack_extension))
-    paleo_bathymetry_wright_filename = os.path.join(
-            paleo_bathymetry_wright_prefix,
-            '{0}_{1:.{2}f}.{3}'.format(paleo_bathymetry_wright_basename, time, paleo_bathymetry_wright_decimal_places_in_time, paleo_bathymetry_wright_extension))
+    paleo_bathymetry_pybacktrack_filename = paleo_bathymetry_pybacktrack_filename_format.format(time)
+    paleo_bathymetry_wright_filename = paleo_bathymetry_wright_filename_format.format(time)
 
     # Sample the paleo bathymetry grids that we're going to merge.
     # print('Reading input bathymetry grids...'); sys.stdout.flush()
@@ -86,10 +109,10 @@ def merge_paleo_bathymetry_grids(
             paleo_bathymetry_pybacktrack_filename,
             paleo_bathymetry_wright_filename)
     
-    if dynamic_topography_model:
+    if interpolate_dynamic_topography_model:
         # Sample the dynamic topography at 'time'.
         # print('Sample dynamic topography at {}...'.format(time)); sys.stdout.flush()
-        dynamic_topography = dynamic_topography_model.sample(time, input_points)
+        dynamic_topography = interpolate_dynamic_topography_model.sample(time, input_points)
     
     # print('Merging...'); sys.stdout.flush()
     merged_points = []
@@ -109,14 +132,14 @@ def merge_paleo_bathymetry_grids(
             # so we don't need to negate them to match pybacktrack-generated paleobathymetry.
             paleo_bathymetry = paleo_bathymetry_wright
             # Also apply dynamic topography to Wright grids if requested (pybacktrack already has it applied).
-            if dynamic_topography_model:
+            if interpolate_dynamic_topography_model:
                 # Dynamic topography, like bathymetry, is positive going up and negative going down so we can just add it to bathymetry.
                 paleo_bathymetry += dynamic_topography[point_index] - dynamic_topography_at_present_day[point_index]
 
         merged_points.append((lon, lat, paleo_bathymetry))
     
     # print('Nearneighbor gridding...'); sys.stdout.flush()
-    merged_grid_filename = os.path.join(merged_grid_directory, '{0}_{1}.nc'.format(merged_grid_basename, time))
+    merged_grid_filename = merged_grid_filename_format.format(time)
     _gmt_nearneighbor(merged_points, merged_grid_spacing_degrees, merged_grid_filename)
 
 
@@ -213,6 +236,10 @@ def _gmt_nearneighbor(
         grid_spacing_degrees,
         grid_filename):
     
+    # Make sure directory containing the output grid file exists.
+    if not os.path.exists(os.path.dirname(grid_filename)):
+        os.makedirs(os.path.dirname(grid_filename))
+    
     # Create a multiline string (one line per lon/lat/value row).
     input_data = ''.join(
             ' '.join(str(item) for item in row) + '\n' for row in input)
@@ -265,51 +292,55 @@ def _generate_input_points_grid(grid_spacing_degrees):
 
 
 if __name__ == '__main__':
+
+    # PyBacktrack paleobathymetry grid filename format (ie, str.format(time) is applied to this string for each 'time').
+    paleo_bathymetry_pybacktrack_filename_format = os.path.join(
+        r'C:\Users\jcann\Development\Usyd\source_code\repositories\Earthbyte\pyBacktrack\misc\paleo_bathymetry_output\paleo_bathymetry_12m_M7_RHCW18',
+        'paleo_bathymetry_{:.1f}.nc')  # 'time' part of filename is 1 decimal place
+
+    # Wright paleobathymetry grids filename format (ie, str.format(time) is applied to this string for each 'time').
+    paleo_bathymetry_wright_filename_format = os.path.join(
+        r'C:\Users\jcann\Development\Usyd\source_code\repositories\Earthbyte\pyBacktrack\misc\paleo_bathymetry_Wright\Paleobathymetry_RHCW18',
+        'paleobathymetry_{:.0f}.nc')  # 'time' part of filename is 0 decimal places
+
+    # How far back in time to generate grids.
+    max_time = 140
+    time_increment = 1
+
+    # For best results set this to the same as Wright grids (they are higher resolution at 0.1 degrees).
+    merged_grid_spacing_degrees = 0.5
+
+    # Merged grid filename format (ie, str.format(time) is applied to this string for each 'time').
+    merged_grid_filename_format = os.path.join(
+        r'C:\Users\jcann\Development\Usyd\source_code\repositories\Earthbyte\pyBacktrack\misc\paleo_bathymetry_output\merged',
+        # Insert grid spacing (in minutes) in output directory name...
+        'paleo_bathymetry_{:.0f}m_M7_RHCW18'.format(merged_grid_spacing_degrees * 60.0),  # this is formatted now
+        'paleo_bathymetry_{:.0f}.nc')  # this is formatted later (with 'time')
+
+    # Use all CPUs (if True then make sure you don't interrupt the process).
+    #
+    # If False then use a single CPU.
+    # If True then use all CPUs (cores).
+    # If a positive integer then use that many CPUs (cores).
+    #
+    use_all_cpus = True
+
+    # Optional dynamic topography model to add to Wright paleobathymetry grids (the pybacktrack grids already have it applied).
+    #
+    # Can be any builtin dynamic topography model *name* supported by pyBacktrack
+    # (see the list at https://pybacktrack.readthedocs.io/en/latest/pybacktrack_backtrack.html#dynamic-topography).
+    #
+    # Note: This can be 'None' if no dynamic topography need be applied.
+    #dynamic_topography_model_name = None
+    dynamic_topography_model_name = 'M7'
+
     
-    # Make sure directory of merged grid files exists.
-    if not os.path.exists(merged_grid_directory):
-        os.makedirs(merged_grid_directory)
-
-    # Generate a global latitude/longitude grid of points (with the requested grid spacing).
-    input_points = _generate_input_points_grid(merged_grid_spacing_degrees)
-
-    if dynamic_topography_model:
-        # Sample the dynamic topography at present day.
-        # print('Sample dynamic topography at {}...'.format(0)); sys.stdout.flush()
-        dynamic_topography_at_present_day = dynamic_topography_model.sample(0, input_points)
-    else:
-        dynamic_topography_at_present_day = None
-    
-    # Create times from present day to 'max_time'.
-    time_range = range(0, max_time+1, time_increment)
-    
-    if use_all_cpus:
-
-        # If 'use_all_cpus' is a bool (and therefore must be True) then use all available CPUs...
-        if isinstance(use_all_cpus, bool):
-            try:
-                num_cpus = multiprocessing.cpu_count()
-            except NotImplementedError:
-                num_cpus = 1
-        # else 'use_all_cpus' is a positive integer specifying the number of CPUs to use...
-        elif isinstance(use_all_cpus, int) and use_all_cpus > 0:
-            num_cpus = use_all_cpus
-        else:
-            raise TypeError('{} is neither a bool nor a positive integer'.format(use_all_cpus))
-
-        # Distribute writing of each grid to a different CPU.
-        with multiprocessing.Pool(num_cpus) as pool:
-            pool.map(
-                    partial(
-                        merge_paleo_bathymetry_grids,
-                        input_points=input_points,
-                        dynamic_topography_at_present_day=dynamic_topography_at_present_day),
-                    time_range,
-                    1) # chunksize
-
-    else:
-        for time in time_range:
-            merge_paleo_bathymetry_grids(
-                    time,
-                    input_points,
-                    dynamic_topography_at_present_day)
+    merge_paleo_bathymetry_grids(
+        max_time,
+        time_increment=time_increment,
+        paleo_bathymetry_pybacktrack_filename_format=paleo_bathymetry_pybacktrack_filename_format,  # filename generated using str.format(time)
+        paleo_bathymetry_wright_filename_format=paleo_bathymetry_wright_filename_format,  # filename generated using str.format(time)
+        merged_grid_filename_format=merged_grid_filename_format,  # filename generated using str.format(time)
+        merged_grid_spacing_degrees=merged_grid_spacing_degrees,
+        dynamic_topography_model_or_bundled_model_name=dynamic_topography_model_name,
+        use_all_cpus=use_all_cpus)
