@@ -106,7 +106,7 @@ def backtrack_well(
     age_grid_filename : string, optional
         Age grid filename.
         Used to obtain age of seafloor at well location.
-        Can be explicitly set to None if well site is known to be on continental crust
+        Can be explicitly set to ``None`` if well site is known to be on continental crust
         (and hence age grid should be ignored). Note that this is different than
         not specifying a filename (since that will use the default bundled age grid).
     topography_filename : string, optional
@@ -115,7 +115,7 @@ def backtrack_well(
     total_sediment_thickness_filename : string, optional
         Total sediment thickness filename.
         Used to obtain total sediment thickness at well location.
-        Can be explicitly set to None if well site is known to be drilled to basement depth
+        Can be explicitly set to ``None`` if well site is known to be drilled to basement depth
         (and hence total sediment thickness grid should be ignored). Note that this is different
         than not specifying a filename (since that will use the default bundled total sediment thickness grid).
     crustal_thickness_filename : string, optional
@@ -158,7 +158,7 @@ def backtrack_well(
         It can be one of the enumerated values, or a callable function accepting a single non-negative age parameter and returning depth (in metres).
     rifting_period : tuple, optional
         Optional time period of rifting (if on continental passive margin - not used for oceanic floor).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be ``None``
         (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
         If specified then overrides value in well file (or value in builtin rift start/end grids if not provided in well file).
     output_rift_stretching_factor: bool, optional
@@ -1042,7 +1042,7 @@ def backtrack_and_write_well(
     age_grid_filename : string, optional
         Age grid filename.
         Used to obtain age of seafloor at well location.
-        Can be explicitly set to None if well site is known to be on continental crust
+        Can be explicitly set to ``None`` if well site is known to be on continental crust
         (and hence age grid should be ignored). Note that this is different than
         not specifying a filename (since that will use the default bundled age grid).
     topography_filename : string, optional
@@ -1051,7 +1051,7 @@ def backtrack_and_write_well(
     total_sediment_thickness_filename : string, optional
         Total sediment thickness filename.
         Used to obtain total sediment thickness at well location.
-        Can be explicitly set to None if well site is known to be drilled to basement depth
+        Can be explicitly set to ``None`` if well site is known to be drilled to basement depth
         (and hence total sediment thickness grid should be ignored). Note that this is different
         than not specifying a filename (since that will use the default bundled total sediment thickness grid).
     crustal_thickness_filename : string, optional
@@ -1096,7 +1096,7 @@ def backtrack_and_write_well(
         It can be one of the enumerated values, or a callable function accepting a single non-negative age parameter and returning depth (in metres).
     rifting_period : tuple, optional
         Optional time period of rifting (if on continental passive margin - not used for oceanic floor).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be ``None``
         (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
         If specified then overrides value in well file (or value in builtin rift start/end grids if not provided in well file).
     output_rift_stretching_factor: bool, optional

@@ -86,26 +86,14 @@ In other words, it represents the age of the total sediment surface.
 Base sediment layer
 ^^^^^^^^^^^^^^^^^^^
 
-It is also possible that the sediment thickness recorded at the drill site is less than the total sediment
-thickness. This happens when the drill site does not penetrate all the way to the basement depth of oceanic or continental crust.
-In this situation a base stratigraphic layer is automatically added during backtracking and backstripping
-to represent sediment from the bottom of the drill site down to the basement depth of oceanic or continental crust.
+It is also possible that the sediment thickness recorded at the drill site is *less* than the total sediment
+thickness. This happens when the drill site does not penetrate all the way to the basement depth (of oceanic or continental crust).
+In this situation a base stratigraphic layer is *automatically* added during backtracking and backstripping
+to represent sediment from the bottom of the drill site down to the basement depth (of oceanic or continental crust).
 
-For backtracking, the bottom age of this new base layer is the age of oceanic crust if the drill site is on ocean crust,
-or the age that rifting starts if the drill site is on continental crust (since it is assumed that deposition began when
-continental stretching started) - see :ref:`backtrack <pybacktrack_backtrack>` for more details.
+The thickness of the base layer is the total sediment thickness minus the drill site thickness.
 
-For backstripping, the bottom age of this new base layer is simply duplicated from the age at the bottom of the drill site
-(ie, bottom age of deepest stratigraphic layer). This is because, unlike backtracking, we don't know the age of the crust.
-But this is fine since the decompacted output only uses the top age of each layer.
-And the decompacted sediment thickness/density (and hence the tectonic subsidence)
-still takes into account the base sediment layer and hence the total sediment thickness.
-Also since backstripping requires min/max recorded paleo-water depths for each layer, these are simply duplicated
-from the bottom layer of the drill site to the new base layer.
-
-By default the lithology of the base layer is ``Shale``, but can be changed using the ``-b`` command-line option in
-the :ref:`backtrack <pybacktrack_backtrack>` and :ref:`backstrip <pybacktrack_backstrip>` modules. To determine the
-total sediment thickness, a grid is sampled at the drill site location. The default grid is
+To determine the total sediment thickness, a grid is sampled at the drill site location. The default grid is
 :ref:`bundled <pybacktrack_reference_bundle_data>` inside ``pybacktrack``. However, you can override this with your
 own grid by using the ``-s`` command-line option in the :ref:`backtrack <pybacktrack_backtrack>` and
 :ref:`backstrip <pybacktrack_backstrip>` modules.
@@ -124,8 +112,20 @@ The default total sediment thickness grid is:
              and a warning is emitted to ``standard error`` on the console.
              This can happen as a result of uncertainties in the sediment thickness grid.
 
+.. note:: | You can avoid adding a base layer if you know that the drill site was drilled to basement depth (and hence should
+            represent the total sediment thickness) but the total sediment thickness *grid* sampled at the drill site location
+            has a larger value than the drill site thickness. This would normally result in a base layer being added automatically.
+          | To avoid adding a base layer, specify the ``-ns`` command-line option in the :ref:`backtrack <pybacktrack_backtrack>`
+            and :ref:`backstrip <pybacktrack_backstrip>` modules. This essentially ignores the total sediment thickness grid.
+
+By default, the lithology of the base layer is ``Shale``, but can be changed using the ``-b`` command-line option in
+the :ref:`backtrack <pybacktrack_backtrack>` and :ref:`backstrip <pybacktrack_backstrip>` modules.
+
 You can optionally write out an amended drill site file that adds this base sediment layer.
 This is useful when you want to know the basement depth at the drill site location.
+
+.. note:: To output an amended drill site file, specify the amended output filename using the ``-o`` command-line option
+          in the :ref:`backtrack <pybacktrack_backtrack>` or :ref:`backstrip <pybacktrack_backstrip>` module.
 
 For example, backtracking the ODP drill site 699 (located on *ocean* crust):
 
@@ -138,11 +138,20 @@ For example, backtracking the ODP drill site 699 (located on *ocean* crust):
 .. include:: ../tests/test_data/ODP-114-699_backtrack_amended.txt
    :literal:
 
-...containing the extra base shale layer with a bottom age equal to the age grid sampled at the drill site
-and a bottom depth equal to the total sediment thickness.
+...containing the extra base shale layer with a bottom depth equal to the total sediment thickness and
+a bottom age equal to the age grid sampled at the drill site location.
 
-.. note:: To output an amended drill site file, specify the amended output filename using the ``-o`` command-line option
-          in the :ref:`backtrack <pybacktrack_backtrack>` or :ref:`backstrip <pybacktrack_backstrip>` module.
+For backtracking, the bottom age of this new base layer is the age of oceanic crust if the drill site is on ocean crust,
+or the age that rifting starts if the drill site is on continental crust (since it is assumed that deposition began when
+continental stretching started) - see :ref:`backtrack <pybacktrack_backtrack>` for more details.
+
+For backstripping, the bottom age of this new base layer is simply duplicated from the age at the bottom of the drill site
+(ie, bottom age of deepest stratigraphic layer). This is because, unlike backtracking, we don't know the age of the crust.
+But this is fine since the decompacted output only uses the top age of each layer.
+And the decompacted sediment thickness/density (and hence the tectonic subsidence)
+still takes into account the base sediment layer and hence the total sediment thickness.
+Also since backstripping requires min/max recorded paleo-water depths for each layer, these are simply duplicated
+from the bottom layer of the drill site to the new base layer.
 
 Geohistory analysis
 ^^^^^^^^^^^^^^^^^^^

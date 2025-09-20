@@ -203,11 +203,11 @@ def reconstruct_backtrack_bathymetry(
         Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
         Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
         Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be ``None``
         (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     exclude_distances_to_trenches_kms : 2-tuple of float, optional
         The two distances to present-day trenches (on subducting and overriding sides, in that order) to exclude bathymetry grid points (in kms), or
-        None to use built-in per-trench defaults. Default is None.
+        ``None`` to use built-in per-trench defaults. Default is ``None``.
     region_plate_ids : list of int, optional
         Plate IDs of one or more plates to restrict paleobathymetry reconstruction to.
         Defaults to global.
@@ -1498,11 +1498,11 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         Optional time period of rifting. If specified then overrides rift periods sampled from builtin rift start/end grids.
         Note that this overrides the *spatially varying* rift periods (of builtin rift start/end grids) with a *constant* rift period.
         Hence it is typically only useful for regional reconstructions (not global). Also, it is only used on continental crust (not oceanic).
-        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be None
+        If specified then should be a 2-tuple (rift_start_age, rift_end_age) where rift_start_age can be ``None``
         (in which case rifting is considered instantaneous from a stretching point-of-view, not thermal).
     exclude_distances_to_trenches_kms : 2-tuple of float, optional
         The two distances to present-day trenches (on subducting and overriding sides, in that order) to exclude bathymetry grid points (in kms), or
-        None to use built-in per-trench defaults. Default is None.
+        ``None`` to use built-in per-trench defaults. Default is ``None``.
     region_plate_ids : list of int, optional
         Plate IDs of one or more plates to restrict paleobathymetry reconstruction to.
         Defaults to global.

@@ -81,7 +81,7 @@ def backstrip_well(
     total_sediment_thickness_filename : str, optional
         Total sediment thickness filename.
         Used to obtain total sediment thickness at well location.
-        Can be explicitly set to None if well site is known to be drilled to basement depth
+        Can be explicitly set to ``None`` if well site is known to be drilled to basement depth
         (and hence total sediment thickness grid should be ignored). Note that this is different
         than not specifying a filename (since that will use the default bundled total sediment thickness grid).
     sea_level_model : string, optional
