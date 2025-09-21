@@ -86,7 +86,7 @@ For example, revisiting our :ref:`backtracking example <pybacktrack_a_backtracki
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE,
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKTRACK_COLUMN_LITHOLOGY],
-        # Might be an extra stratigraphic well layer added from well bottom to ocean basement...
+        # Might be an extra stratigraphic well layer added from well bottom to basement...
         ammended_well_output_filename=amended_well_output_filename)
 
 .. note:: The drill site file ``pybacktrack_examples/example_data/ODP-114-699-Lithology.txt`` is part of the :ref:`example data <pybacktrack_install_examples>`.
@@ -162,6 +162,13 @@ Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`pa
 .. note:: The output columns are specified using the ``-d`` command-line option (run ``python -m pybacktrack.backtrack_cli --help`` to see all options), or
           using the *decompacted_columns* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
+
+.. note:: By default, the rows are associated with the the stratigraphic ages in the input drill site.
+          However, you can specify your own time for each row using the ``-tl`` or ``-tr`` command-line options
+          (run ``python -m pybacktrack.backtrack_cli --help`` for more details) or using the *times* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
+          In this case, if any specified time is either younger than the drill site's surface age (which is not usually an issue since the surface age is typically present day)
+          or older than the drill site's bottom age (ie, basement age if drill site contains a base layer) then that time will be ignored
+          (since it's outside the drill site's period of sediment deposition).
 
 .. _pybacktrack_backtrack_paleo_locations:
 

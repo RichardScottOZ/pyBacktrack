@@ -31,6 +31,7 @@ from pybacktrack.util.call_system_command import call_system_command
 import pybacktrack.version
 from pybacktrack.well import read_well_file, write_well_file, write_well_metadata
 import math
+import numpy as np
 import pygplates
 import sys
 import warnings
@@ -38,6 +39,7 @@ import warnings
 
 def backstrip_well(
         well_filename,
+        times=None,
         *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
@@ -56,6 +58,7 @@ def backstrip_well(
     # the expanded values of the bundle filenames.
     """backstrip_well(\
         well_filename,\
+        times=None,\
         *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
@@ -76,7 +79,13 @@ def backstrip_well(
     ----------
     well_filename : str
         Name of well text file.
-    lithology_filenames : list of string, optional
+    times : list of float, optional
+        A list of times to decompact sediment.
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned for each listed time
+        that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
+        Defaults to the ages of the top of each stratigraphic unit in the well
+        (in which case a :class:`pybacktrack.DecompactedWell` is returned for each top age).
+    lithology_filenames: list of string, optional
         One or more text files containing lithologies.
     total_sediment_thickness_filename : str, optional
         Total sediment thickness filename.
@@ -129,7 +138,9 @@ def backstrip_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
+        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
+        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     
     Raises
     ------
@@ -149,6 +160,7 @@ def backstrip_well(
     .. versionchanged:: 1.5
         The following changes were made:
 
+        - Added optional ``times`` argument to explicitly specify when to decompact sediment.
         - Added optional ``rotation_filenames``, ``static_polygon_filename`` and ``anchor_plate_id`` arguments for reconstructing the
           present day well location through time (as new :attr:`DecompactedWell.paleo_longitude` and :attr:`DecompactedWell.paleo_latitude` attributes).
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
@@ -263,9 +275,20 @@ def backstrip_well(
         base_unit_top_depth, base_unit_bottom_depth,
         base_unit_lithology_components, lithologies,
         base_unit_other_attributes)
-        
-    # Each decompacted well (in returned list) represents decompaction at the age of a stratigraphic unit in the well.
-    decompacted_wells = well.decompact()
+    
+    if times is None:
+        # Each decompacted well (in returned list) represents decompaction at the age of a stratigraphic unit in the well.
+        decompacted_wells = well.decompact()
+    else:
+        # Each decompacted well (in the list) represents decompaction at a specific time (requested by caller).
+        #
+        # Note: Times older than the bottom age of the well (the basement age) are not included in the list.
+        decompacted_wells = []
+        for time in times:
+            decompacted_well = well.decompact(time)
+            if decompacted_well:
+                # 'time' is younger than the basement age.
+                decompacted_wells.append(decompacted_well)
     
     # Calculate sea level (relative to present day) for each decompaction age (unpacking of stratigraphic units)
     # that is an average over the decompacted surface layer's period of deposition.
@@ -547,6 +570,7 @@ def write_well(
 def backstrip_and_write_well(
         decompacted_output_filename,
         well_filename,
+        times=None,
         *,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         total_sediment_thickness_filename=pybacktrack.bundle_data.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,
@@ -568,6 +592,7 @@ def backstrip_and_write_well(
     """backstrip_and_write_well(\
         decompacted_output_filename,\
         well_filename,\
+        times=None,\
         *,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         total_sediment_thickness_filename=pybacktrack.BUNDLE_TOTAL_SEDIMENT_THICKNESS_FILENAME,\
@@ -586,7 +611,7 @@ def backstrip_and_write_well(
         ammended_well_output_filename=None)
     Same as :func:`pybacktrack.backstrip_well` but also writes decompacted results to a text file.
     
-    Also optionally write amended well data (ie, including extra stratigraphic base unit from well bottom to ocean basement)
+    Also optionally write amended well data (ie, including extra stratigraphic base unit from well bottom to basement)
     to ``ammended_well_output_filename`` if specified.
     
     Parameters
@@ -595,6 +620,11 @@ def backstrip_and_write_well(
         Name of text file to write decompacted results to.
     well_filename : string
         Name of well text file.
+    times : list of float, optional
+        A list of times to decompact sediment.
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned (and a decompacted result written to text file)
+        for each listed time that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
+        Defaults to the ages of the top of each stratigraphic unit in the well (in which case there is a decompacted well/result for each top age).
     lithology_filenames: list of string, optional
         One or more text files containing lithologies.
     total_sediment_thickness_filename : string, optional
@@ -660,7 +690,7 @@ def backstrip_and_write_well(
     well_lithology_column : int, optional
         The column of well file containing lithology(s). Defaults to 4.
     ammended_well_output_filename: string, optional
-        Amended well data filename. Useful if an extra stratigraphic base unit is added from well bottom to ocean basement.
+        Amended well data filename. Useful if an extra stratigraphic base unit is added from well bottom to basement.
     
     Returns
     -------
@@ -669,7 +699,9 @@ def backstrip_and_write_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        There is one decompacted well per age, in same order (and ages) as the well units (youngest to oldest).
+        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
+        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     
     Raises
     ------
@@ -689,6 +721,7 @@ def backstrip_and_write_well(
     .. versionchanged:: 1.5
         The following changes were made:
 
+        - Added optional ``times`` argument to explicitly specify when to decompact sediment.
         - Added optional ``rotation_filenames``, ``static_polygon_filename`` and ``anchor_plate_id`` arguments for reconstructing the
           present day well location through time (as new :attr:`DecompactedWell.paleo_longitude` and :attr:`DecompactedWell.paleo_latitude` attributes).
         - Added ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LONGITUDE`` and ``pybacktrack.BACKSTRIP_COLUMN_PALEO_LATITUDE`` to available columns for ``decompacted_columns``.
@@ -699,6 +732,7 @@ def backstrip_and_write_well(
     # Decompact the well.
     well, decompacted_wells = backstrip_well(
         well_filename,
+        times=times,
         lithology_filenames=lithology_filenames,
         total_sediment_thickness_filename=total_sediment_thickness_filename,
         sea_level_model=sea_level_model,
@@ -788,7 +822,7 @@ def main():
     6 to lithology(s).
     
     The decompaction-related outputs are written to a text file with each row representing the top age of a
-    stratigraphic unit in the well.
+    stratigraphic unit in the well. Alternatively, the rows can represent an explicitly provided sequence of times.
     The following output parameters are available:
 {0}
     ...where age has units Ma, and thickness/subsidence/depth have units metres, and density has units kg/m3.
@@ -804,6 +838,33 @@ def main():
 
     import argparse
     from pybacktrack.lithology import ArgParseLithologyAction, DEFAULT_BUNDLED_LITHOLOGY_SHORT_NAME, BUNDLED_LITHOLOGY_SHORT_NAMES
+
+    def argparse_non_negative_float(value_string):
+        try:
+            value = float(value_string)
+        except ValueError:
+            raise argparse.ArgumentTypeError("%s is not a number" % value_string)
+        
+        if value < 0:
+            raise argparse.ArgumentTypeError("%g is a negative number" % value)
+        
+        return value
+
+    # Action to parse a uniform time range.
+    class ArgParseTimeRangeAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            if len(values) != 3:
+                parser.error('Time range must have three parameters (start, stop, step).')
+            
+            start = float(values[0])
+            stop = float(values[1])
+            step = float(values[2])
+    
+            # Create the time range.
+            # Note: Using 1e-6 to ensure the stop time gets included (if it's an exact multiple of the step, which it likely will be).
+            time_range = [float(time) for time in np.arange(start, stop + 1e-6, step)]
+            
+            setattr(namespace, self.dest, time_range)
     
     # Basically an argparse.RawDescriptionHelpFormatter that will also preserve formatting of
     # argument help messages if they start with "R|".
@@ -998,6 +1059,19 @@ def main():
              'If no filename (or model) is specified then sea level is ignored. '
              'If specified then each row should contain an age column followed by a column for sea level (in metres).')
     
+    # Can optionally specify a sequence of times as a uniform range of times or an explicit list of times but not both.
+    times_argument_group = parser.add_mutually_exclusive_group()
+    times_argument_group.add_argument('-tl', '--time_list', nargs='+', type=argparse_non_negative_float,
+            metavar='time',
+            help='Optional list of times (in Ma) to decompact sediment. '
+                 'If no times are specified (either here or with "--time_range") then defaults to the top ages of the stratigraphic units in the well.')
+    times_argument_group.add_argument('-tr', '--time_range', nargs=3, action=ArgParseTimeRangeAction,
+            metavar=('start', 'stop', 'step'),
+            help='Optional range of times (in Ma) to decompact sediment. '
+                 'If provided then must specify 3 numbers (float or integer) that are the start, stop and step of a uniform time interval '
+                 '(eg, "40, 100, 10" represents the interval from 40 Ma to 100 Ma inclusive, in 10 Myr intervals). '
+                 'If no times are specified (either here or with "--time_list") then defaults to the top ages of the stratigraphic units in the well.')
+    
     parser.add_argument(
         'output_filename', type=parse_unicode,
         metavar='output_filename',
@@ -1033,10 +1107,19 @@ def main():
     else:
         sea_level_model = None
     
+    # If a time list/range was explicitly provided then use that (intead of the top ages of the stratigraphic units).
+    if args.time_range:
+        times = args.time_range
+    elif args.time_list:
+        times = args.time_list
+    else:
+        times = None
+    
     # Backstrip and write output data.
     backstrip_and_write_well(
         args.output_filename,
         args.well_filename,
+        times=times,
         lithology_filenames=args.lithology_filenames,
         total_sediment_thickness_filename=total_sediment_thickness_filename,
         sea_level_model=sea_level_model,

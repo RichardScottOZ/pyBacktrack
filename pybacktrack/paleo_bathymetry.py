@@ -784,7 +784,7 @@ def _reconstruct_backtrack_continental_bathymetry(
         well.add_compacted_unit(0.0, rift_start_age, 0.0, present_day_total_sediment_thickness, lithology_components, lithologies)
         # If we're reconstructing to times prior to rifting then add an extra stratigraphic layer with zero thickness to cover the period prior to rifting.
         # Having this zero thickness layer prevents us from prematurely ending bathymetry reconstruction for times prior to rifting by ensuring
-        # 'well.decompact(decompaction_time)' does not return None (when 'decompaction_time >= rift_start_age').
+        # 'well.decompact(decompaction_time)' does not return None (when 'decompaction_time > rift_start_age').
         # The tectonic subsidence will be zero during this time period.
         # It also allows us to easily see other effects prior to sediment deposition (eg, sea level, dynamic topography). 
         if time_range[-1] >= rift_start_age:

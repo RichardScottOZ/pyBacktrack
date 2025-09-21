@@ -464,7 +464,7 @@ The following Python code does the same as the :ref:`built-in script<pybacktrack
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE,
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKTRACK_COLUMN_LITHOLOGY],
-        # Might be an extra stratigraphic well layer added from well bottom to ocean basement...
+        # Might be an extra stratigraphic well layer added from well bottom to basement...
         ammended_well_output_filename=amended_well_output_filename)
 
 If you save the above code to a file called ``my_backtrack_script.py`` then you can run it as:
