@@ -106,8 +106,9 @@ def backtrack_well(
         Name of well text file.
     times : list of float, optional
         A list of times to decompact sediment.
-        If specified then a :class:`pybacktrack.DecompactedWell` is returned for each listed time
-        that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned for each listed time.
+        And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
+        (eg, older than the drill site's bottom age or younger than its surface age).
         Defaults to the ages of the top of each stratigraphic unit in the well
         (in which case a :class:`pybacktrack.DecompactedWell` is returned for each top age).
     lithology_filenames: list of string, optional
@@ -203,8 +204,7 @@ def backtrack_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
-        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        If ``times`` is specified, then there is one decompacted well for each listed time (in the same order as the listed times).
         Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     rift_stretching_factor : float or None
         Only provided when ``output_rift_stretching_factor`` is ``True``.
@@ -350,18 +350,11 @@ def backtrack_well(
         age)
     
     if times is None:
-        # Each decompacted well (in returned list) represents decompaction at the age of a stratigraphic unit in the well.
+        # Each decompacted well (in returned list) represents decompaction at the top age of a stratigraphic unit in the well.
         decompacted_wells = well.decompact()
     else:
         # Each decompacted well (in the list) represents decompaction at a specific time (requested by caller).
-        #
-        # Note: Times older than the bottom age of the well (the basement age) are not included in the list.
-        decompacted_wells = []
-        for time in times:
-            decompacted_well = well.decompact(time)
-            if decompacted_well:
-                # 'time' is younger than the basement age.
-                decompacted_wells.append(decompacted_well)
+        decompacted_wells = [well.decompact(time) for time in times]
     
     # Calculate sea level (relative to present day) for each decompaction age (unpacking of stratigraphic units)
     # that is an average over the decompacted surface layer's period of deposition.
@@ -385,10 +378,12 @@ def backtrack_well(
     # If we already have a present-day decompaction of the well then use that, otherwise explicitly decompact the well at present day.
     for decompacted_well in decompacted_wells:
         if decompacted_well.get_age() == 0:
-            present_day_total_sediment_isostatic_correction = decompacted_well.get_sediment_isostatic_correction()
+            present_day_decompacted_well = decompacted_well
             break
     else:
-        present_day_total_sediment_isostatic_correction = well.decompact(0.0).get_sediment_isostatic_correction()
+        present_day_decompacted_well = well.decompact(0.0)
+    # Get the present-day isostatic correction.
+    present_day_total_sediment_isostatic_correction = present_day_decompacted_well.get_sediment_isostatic_correction()
     
     # Unload the sediment to get unloaded water depth.
     # Note that sea level variations don't apply here because they are zero at present day.
@@ -1071,9 +1066,10 @@ def backtrack_and_write_well(
         Name of well text file.
     times : list of float, optional
         A list of times to decompact sediment.
-        If specified then a :class:`pybacktrack.DecompactedWell` is returned (and a decompacted result written to text file)
-        for each listed time that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
-        Defaults to the ages of the top of each stratigraphic unit in the well (in which case there is a decompacted well/result for each top age).
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned (and a row written to text file) for each listed time.
+        And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
+        (eg, older than the drill site's bottom age or younger than its surface age).
+        Defaults to the ages of the top of each stratigraphic unit in the well (in which case there is a decompacted well/row for each top age).
     lithology_filenames: list of string, optional
         One or more text files containing lithologies.
     age_grid_filename : string, optional
@@ -1190,8 +1186,7 @@ def backtrack_and_write_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
-        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        If ``times`` is specified, then there is one decompacted well for each listed time (in the same order as the listed times).
         Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     rift_stretching_factor : float or None
         Only provided when ``output_rift_stretching_factor`` is ``True``.

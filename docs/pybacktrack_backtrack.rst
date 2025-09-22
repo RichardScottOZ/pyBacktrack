@@ -163,11 +163,17 @@ Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`pa
           using the *decompacted_columns* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
 
-.. note:: By default, the rows are associated with the the stratigraphic ages in the input drill site.
-          However, you can specify your own time for each row using the ``-tl`` or ``-tr`` command-line options
-          (run ``python -m pybacktrack.backtrack_cli --help`` for more details) or using the *times* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
-          In this case, if any specified time is older than the drill site's bottom age (ie, basement age if drill site contains a base layer) then that time will be ignored
-          (since sediment is yet to be deposited, according to the drill site record).
+By default, the rows are associated with the the stratigraphic ages in the input drill site.
+However, you can specify your own time for each row using the ``-tl`` or ``-tr`` command-line options (run ``python -m pybacktrack.backtrack_cli --help`` for more details)
+or using the *times* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
+And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
+(eg, older than the drill site's bottom age or younger than its surface age). You will still get rows for these times.
+
+.. note:: Specifying your own times (eg, using ``-tl`` or ``-tr`` command-line options) means that a time could fall *inside* a stratigraphic unit
+          (ie, not exactly on a stratigraphic boundary, as in the default case).
+          In this case, a sub-section of the *surface* stratigraphic unit (that's at the surface at the specified time) is stripped off to create a
+          :meth:`partial unit <pybacktrack.StratigraphicUnit.create_partial_unit>`.
+          The part that's stripped off is from the unit's top age to the specified time (assuming a constant sediment deposition rate for the unit).
 
 .. _pybacktrack_backtrack_paleo_locations:
 

@@ -636,12 +636,14 @@ def _reconstruct_backtrack_oceanic_bathymetry(
         # that began sediment deposition at 'age' Ma (and finished at present day).
         well = Well()
         well.add_compacted_unit(0.0, age, 0.0, present_day_total_sediment_thickness, lithology_components, lithologies)
-        # If we're reconstructing to times prior to 'age' then add an extra stratigraphic layer with zero thickness to cover the period prior
-        # to ocean crust formation at the mid-ocean ridge. We won't actually reconstruct prior to crust formation, but having this zero thickness layer
-        # means we don't have to test if None is returned by 'well.decompact(decompaction_time)' for special cases like an age grid value of zero
-        # (where we'd still like to create a bathmetry value at present day). Also this extra layer is similar to how it's done with continental crust. 
-        if time_range[-1] >= age:
-            well.add_compacted_unit(age, time_range[-1] + 1, present_day_total_sediment_thickness, present_day_total_sediment_thickness, lithology_components, lithologies)
+        #
+        # Note: If we're reconstructing to times prior to 'age' then even though we don't have a stratigraphic unit to cover those times,
+        #       decompaction will still decompact (when 'decompaction_time > age'). PyBacktrack 1.4 would return None, but now we
+        #       get a DecompactedWell (which internally has a zero-thickness stratigraphic layer to cover the requested decompaction time).
+        #       We won't actually reconstruct prior to 'age' since that's when ocean crust formed at a mid-ocean ridge, but having a
+        #       DecompactedWell (instead of None) prior to crust formation means we don't have to test if None is returned by 'well.decompact(decompaction_time)'
+        #       for special cases like an age grid value of zero (where we'd still like to create a bathmetry value at present day).
+        #       Also this extra layer is similar to how it's done with continental crust.
 
         # Unload the present day sediment to get unloaded present day water depth.
         # Apply an isostatic correction to the total sediment thickness (we decompact the well at present day to find this).
@@ -782,13 +784,12 @@ def _reconstruct_backtrack_continental_bathymetry(
         # that began sediment deposition when rifting began (and finished at present day).
         well = Well()
         well.add_compacted_unit(0.0, rift_start_age, 0.0, present_day_total_sediment_thickness, lithology_components, lithologies)
-        # If we're reconstructing to times prior to rifting then add an extra stratigraphic layer with zero thickness to cover the period prior to rifting.
-        # Having this zero thickness layer prevents us from prematurely ending bathymetry reconstruction for times prior to rifting by ensuring
-        # 'well.decompact(decompaction_time)' does not return None (when 'decompaction_time > rift_start_age').
-        # The tectonic subsidence will be zero during this time period.
-        # It also allows us to easily see other effects prior to sediment deposition (eg, sea level, dynamic topography). 
-        if time_range[-1] >= rift_start_age:
-            well.add_compacted_unit(rift_start_age, time_range[-1] + 1, present_day_total_sediment_thickness, present_day_total_sediment_thickness, lithology_components, lithologies)
+        #
+        # Note: If we're reconstructing to times prior to rifting then even though we don't have a stratigraphic unit to cover those times,
+        #       decompaction will still decompact (when 'decompaction_time > rift_start_age'). PyBacktrack 1.4 would return None, but now we
+        #       get a DecompactedWell (which internally has a zero-thickness stratigraphic layer to cover the requested decompaction time).
+        #       And the DecompactedWell should have a tectonic subsidence of zero (prior to rifting).
+        #       And it also allows us to easily see other effects prior to rifting/sediment-deposition (eg, sea level, dynamic topography).
 
         # Unload the present day sediment to get unloaded present day water depth.
         # Apply an isostatic correction to the total sediment thickness (we decompact the well at present day to find this).

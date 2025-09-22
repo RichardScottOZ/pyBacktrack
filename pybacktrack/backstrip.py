@@ -81,8 +81,9 @@ def backstrip_well(
         Name of well text file.
     times : list of float, optional
         A list of times to decompact sediment.
-        If specified then a :class:`pybacktrack.DecompactedWell` is returned for each listed time
-        that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned for each listed time.
+        And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
+        (eg, older than the drill site's bottom age or younger than its surface age).
         Defaults to the ages of the top of each stratigraphic unit in the well
         (in which case a :class:`pybacktrack.DecompactedWell` is returned for each top age).
     lithology_filenames: list of string, optional
@@ -138,8 +139,7 @@ def backstrip_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
-        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        If ``times`` is specified, then there is one decompacted well for each listed time (in the same order as the listed times).
         Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     
     Raises
@@ -277,18 +277,11 @@ def backstrip_well(
         base_unit_other_attributes)
     
     if times is None:
-        # Each decompacted well (in returned list) represents decompaction at the age of a stratigraphic unit in the well.
+        # Each decompacted well (in returned list) represents decompaction at the top age of a stratigraphic unit in the well.
         decompacted_wells = well.decompact()
     else:
         # Each decompacted well (in the list) represents decompaction at a specific time (requested by caller).
-        #
-        # Note: Times older than the bottom age of the well (the basement age) are not included in the list.
-        decompacted_wells = []
-        for time in times:
-            decompacted_well = well.decompact(time)
-            if decompacted_well:
-                # 'time' is younger than the basement age.
-                decompacted_wells.append(decompacted_well)
+        decompacted_wells = [well.decompact(time) for time in times]
     
     # Calculate sea level (relative to present day) for each decompaction age (unpacking of stratigraphic units)
     # that is an average over the decompacted surface layer's period of deposition.
@@ -622,9 +615,10 @@ def backstrip_and_write_well(
         Name of well text file.
     times : list of float, optional
         A list of times to decompact sediment.
-        If specified then a :class:`pybacktrack.DecompactedWell` is returned (and a decompacted result written to text file)
-        for each listed time that is younger than or equal to the bottom age of the bottommost stratigraphic unit of the well.
-        Defaults to the ages of the top of each stratigraphic unit in the well (in which case there is a decompacted well/result for each top age).
+        If specified then a :class:`pybacktrack.DecompactedWell` is returned (and a row written to text file) for each listed time.
+        And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
+        (eg, older than the drill site's bottom age or younger than its surface age).
+        Defaults to the ages of the top of each stratigraphic unit in the well (in which case there is a decompacted well/row for each top age).
     lithology_filenames: list of string, optional
         One or more text files containing lithologies.
     total_sediment_thickness_filename : string, optional
@@ -699,8 +693,7 @@ def backstrip_and_write_well(
         It may also be amended with a base stratigraphic unit from the bottom of the well to basement.
     decompacted_wells : list of :class:`pybacktrack.DecompactedWell`
         The decompacted wells associated with the well.
-        If ``times`` is specified, then there is one decompacted well for each listed time that is younger than or equal to the bottom age of the
-        bottommost stratigraphic unit (in the same order as the listed times) - this means any time older than the bottom of the well is ignored.
+        If ``times`` is specified, then there is one decompacted well for each listed time (in the same order as the listed times).
         Otherwise there is one decompacted well for each stratigraphic unit (at its top age) in the same order as the units (youngest to oldest).
     
     Raises

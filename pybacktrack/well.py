@@ -115,26 +115,28 @@ class StratigraphicUnit(object):
     @staticmethod
     def create_partial_unit(unit, top_age):
         """create_partial_unit(unit, top_age)
-        Create a new stratigraphic unit equivalent to 'unit' but with the top part stripped off according to 'top_age'.
+        Create a new stratigraphic unit equivalent to ``unit`` but with the top part stripped off according to ``top_age``.
 
-        Essentially sediment deposited from 'top_age' to the top age of 'unit' is stripped off (assuming a constant sediment deposition rate for 'unit').
-        And so 'top_age' is expected to be older/earlier than the top age of 'unit' (and younger than the bottom age of 'unit').
+        Essentially sediment deposited from ``top_age`` to the top age of ``unit`` is stripped off (assuming a constant sediment deposition rate for ``unit``).
+        And so ``top_age`` is expected to be older/earlier than the top age of ``unit`` (and younger than the bottom age of ``unit``).
         
         Parameters
         ----------
+        unit : :class:`pybacktrack.StratigraphicUnit`
+            Stratigraphic unit to create new unit from.
         top_age : float
             Top age of new stratigraphic unit.
         
         Raises
         ------
         ValueError
-            If 'top_age' is outside the top/bottom age range of 'unit'.
+            If ``top_age`` is outside the top/bottom age range of ``unit``.
         ValueError
-            If top age of 'unit' is greater than or equal to the bottom age of 'unit'.
+            If top age of ``unit`` is greater than the bottom age of ``unit``.
         
         Notes
         -----
-        This does *not* partially decompact 'unit'.
+        This does *not* partially decompact ``unit``.
         It is simply adjusting the top depth of new unit to correspond to its new top age.
         Then when the returned partial stratigraphic unit is subsequently decompacted it'll have the correct volume of grains
         (assuming a constant sediment deposition rate) and hence be decompacted correctly at its new top age.
@@ -164,6 +166,110 @@ class StratigraphicUnit(object):
             new_unit.decompacted_top_depth = new_unit.decompacted_bottom_depth - new_unit.get_fully_decompacted_thickness()
 
         return new_unit
+    
+    @staticmethod
+    def _create_zero_thickness_surface_unit(surface_unit, surface_age):
+        """_create_zero_thickness_surface_unit(surface_unit, surface_age)
+        Create a new *surface* stratigraphic unit equivalent to ``surface_unit`` but with zero thickness and that sits on top of ``surface_unit``.
+
+        Essentially no sediment is deposited from ``surface_age`` to the top age of ``surface_unit``.
+        And so ``surface_age`` is expected to be younger/later than the top age of ``surface_unit``.
+        
+        Parameters
+        ----------
+        surface_unit : :class:`pybacktrack.StratigraphicUnit`
+            Previous surface stratigraphic unit to create new surface unit on top of.
+        surface_age : float
+            Surface age of new surface unit.
+        
+        Notes
+        -----
+        This just enables decompaction for ages younger than the surface age of a well.
+        
+        .. versionadded:: 1.5
+        """
+        
+        # Copy 'surface_unit' and modify the top/bottom ages and the bottom depth.
+        new_surface_unit = copy.copy(surface_unit)
+        # New surface unit sits on top of 'surface_unit'.
+        new_surface_unit.bottom_depth = surface_unit.top_depth
+        # New surface unit is zero thickness.
+        new_surface_unit.top_depth = new_surface_unit.bottom_depth
+        # Bottom age of new surface unit is top age of 'surface_unit'.
+        new_surface_unit.bottom_age = surface_unit.top_age
+        # Top age of new surface unit is the requested age.
+        #
+        # Note: The top age will be used as the age of a DecompactedWell (containing this surface unit, and all units underneath that).
+        new_surface_unit.top_age = surface_age
+
+        # Need to re-calculate fully decompacted thickness since new surface unit has a different compacted thickness (it'll be zero).
+        new_surface_unit._fully_decompacted_thickness = None
+
+        # Fully decompacted bottom depth will be different (since the fully decompacted thickness of the new surface unit is different - it's zero).
+        #
+        # If 'surface_unit' has decompacted top/bottom depth attributes then it means 'surface_unit' was added to a 'Well' (which calculated these
+        # attributes from the top unit down through to the bottom unit) and we'll need to adjust the decompacted bottom depth of the new surface unit
+        # (since the fully decompacted thickness of the new surface unit is different - it's zero).
+        #
+        # However if 'surface_unit' does not have these attributes then we won't add them to the new surface unit
+        # (instead we'll let them get calculated when they're added to a Well).
+        #
+        if hasattr(new_surface_unit, 'decompacted_top_depth') and hasattr(new_surface_unit, 'decompacted_bottom_depth'):
+            # Note: Querying fully decompacted thickness needs to be done after setting new 'bottom_depth' and setting '_fully_decompacted_thickness' to None...
+            new_surface_unit.decompacted_bottom_depth = new_surface_unit.decompacted_top_depth + new_surface_unit.get_fully_decompacted_thickness()
+
+        return new_surface_unit
+    
+    @staticmethod
+    def _create_zero_thickness_base_unit(base_unit, base_age):
+        """_create_zero_thickness_base_unit(base_unit, base_age)
+        Create a new *base* stratigraphic unit equivalent to ``base_unit`` but with zero thickness and that sits underneath ``base_unit``.
+
+        Essentially no sediment is deposited from the bottom age of ``base_unit`` to ``base_age``.
+        And so ``base_age`` is expected to be older/earlier than the bottom age of ``base_unit``.
+        
+        Parameters
+        ----------
+        base_unit : :class:`pybacktrack.StratigraphicUnit`
+            Previous base stratigraphic unit to create new base unit underneath.
+        base_age : float
+            Base age of new base unit.
+        
+        Notes
+        -----
+        This just enables decompaction for ages older than the bottom age of a well.
+        
+        .. versionadded:: 1.5
+        """
+        
+        # Copy 'base_unit' and modify the top/bottom ages and the bottom depth.
+        new_base_unit = copy.copy(base_unit)
+        # New base unit sits underneath 'base_unit'.
+        new_base_unit.top_depth = base_unit.bottom_depth
+        # New base unit is zero thickness.
+        new_base_unit.bottom_depth = new_base_unit.top_depth
+        # Top/bottom age of new base unit is the requested age.
+        #
+        # Note: The top age will be used as the age of a DecompactedWell (containing this base unit as its only unit).
+        new_base_unit.top_age = new_base_unit.bottom_age = base_age
+
+        # Need to re-calculate fully decompacted thickness since new base unit has a different compacted thickness (it'll be zero).
+        new_base_unit._fully_decompacted_thickness = None
+
+        # Fully decompacted bottom depth will be different (since the fully decompacted thickness of the new base unit is different - it's zero).
+        #
+        # If 'base_unit' has decompacted top/bottom depth attributes then it means 'base_unit' was added to a 'Well' (which calculated these
+        # attributes from the top unit down through to the bottom unit) and we'll need to adjust the decompacted top depth of the new base unit
+        # (since the fully decompacted thickness of the new base unit is different - it's zero).
+        #
+        # However if 'base_unit' does not have these attributes then we won't add them to the new base unit
+        # (instead we'll let them get calculated when they're added to a Well).
+        #
+        if hasattr(new_base_unit, 'decompacted_top_depth') and hasattr(new_base_unit, 'decompacted_bottom_depth'):
+            # Note: Querying fully decompacted thickness needs to be done after setting new 'top_depth' and setting '_fully_decompacted_thickness' to None...
+            new_base_unit.decompacted_top_depth = new_base_unit.decompacted_bottom_depth - new_base_unit.get_fully_decompacted_thickness()
+
+        return new_base_unit
     
     def calc_decompacted_thickness(self, decompacted_depth_to_top):
         """
@@ -420,7 +526,7 @@ class StratigraphicUnit(object):
         ValueError
             If ``age`` is outside the top/bottom age range of this stratigraphic unit.
         ValueError
-            If top age of this stratigraphic unit is greater than or equal to the bottom age of this stratigraphic unit.
+            If top age of this stratigraphic unit is greater than the bottom age of this stratigraphic unit.
         
         Returns
         -------
@@ -444,13 +550,17 @@ class StratigraphicUnit(object):
         if present_day_thickness == 0.0:
             return self.bottom_depth
         
-        # Avoid divide-by-zero error or negative deposition rate.
-        if self.top_age >= self.bottom_age:
-            raise ValueError("top age must be less than the bottom age of stratigraphic unit")
+        age_range = self.bottom_age - self.top_age
+        if age_range == 0.0:
+            return self.bottom_depth
+        
+        # Avoid negative deposition rate.
+        if age_range < 0.0:
+            raise ValueError("top age cannot be greater than the bottom age of stratigraphic unit")
         
         # Sediment deposited from 'age' to bottom age dividied by sediment deposited from top age to bottom age
         # (assuming a constant sediment deposition rate over the lifetime of this stratigraphic unit).
-        sediment_deposition_ratio = (self.bottom_age - age) / (self.bottom_age - self.top_age)
+        sediment_deposition_ratio = (self.bottom_age - age) / age_range
         
         surface_porosity = self.lithology.surface_porosity
         porosity_decay = self.lithology.porosity_decay
@@ -663,7 +773,7 @@ class Well(object):
         Returns
         -------
         :class:`pybacktrack.DecompactedWell`, or list of :class:`pybacktrack.DecompactedWell`
-            If ``age`` is specified then returns the decompacted well at that age (or None if ``age`` is older than bottom age of well),
+            If ``age`` is specified then returns the decompacted well at that age,
             otherwise a list of decompacted wells with one per age in same order (and ages) as the well units (youngest to oldest).
         
         Notes
@@ -671,28 +781,61 @@ class Well(object):
         .. versionchanged:: 1.4
            Added the ``age`` parameter.
         .. versionchanged:: 1.5
-           No longer returns ``None`` when ``age`` equals bottom age of well.
+           No longer returns ``None`` when ``age`` is specified but is older than bottom age of the well.
         """
-        
-        # If an age was specified then return a single decompacted well representing the state of
-        # decompaction at the specified age.
-        if age is not None:
-            # Find the stratigraphic unit containing the specified age.
-            # This is the surface unit at the specified age.
-            for surface_unit_index, surface_unit in enumerate(self.stratigraphic_units):
-                # Units are ordered by age (youngest to oldest).
-                #
-                # If current stratigraphic unit is the bottommost unit then *include* the unit's bottom age,
-                # otherwise *exclude* the unit's bottom age. This means we won't needlessly create a partial unit
-                # with zero age range (and zero thickness) unless 'age' happens to be equal to the bottom age of
-                # the bottommost unit. And if 'age' is to equal the bottom age of the bottommost unit then we are
-                # still returning a decompacted well (instead of 'None') despite it having zero thickness - since
-                # it's helpful to return a non-None result at the exact age at which sediment deposition began
-                # (as recorded by the well).
-                bottom_unit_index = len(self.stratigraphic_units) - 1
-                if ((surface_unit_index == bottom_unit_index and age <= surface_unit.bottom_age) or
-                    (surface_unit_index < bottom_unit_index and age < surface_unit.bottom_age)):
+        if age is None:
+            #
+            # An age was *not* specified, so return a list of decompacted wells where each decompacted well
+            # represents the state of decompaction at the top age of each stratigraphic layer.
+            #
 
+            # Each decompacted well represents decompaction at the age of a stratigraphic unit in the well.
+            decompacted_wells = []
+            
+            # Iterate over the stratigraphic units - they are sorted by age (youngest to oldest).
+            #
+            # Note that the first decompacted well doesn't really need decompaction (it's compacted) but we do it anyway
+            # (it's quick since it only requires one iteration in the decompacted thickness convergence loop).
+            num_stratigraphic_units = len(self.stratigraphic_units)
+            for surface_unit_index in range(0, num_stratigraphic_units):
+                # Decompact from top of surface unit to bottom of well (ie, surface unit and all units beneath it).
+                units_to_decompact = self.stratigraphic_units[surface_unit_index:]
+
+                # For testing StratigraphicUnit.create_partial_unit().
+                # TODO: Remove this code when a proper test is created.
+                #
+                #for unit_index, unit in enumerate(units_to_decompact):
+                #    partial_unit = StratigraphicUnit.create_partial_unit(unit, unit.top_age)
+                #    units_to_decompact[unit_index] = partial_unit
+
+                decompacted_well = self._decompact_units(units_to_decompact)
+                decompacted_wells.append(decompacted_well)
+            
+            return decompacted_wells
+
+        #
+        # An age was specified, so return a single decompacted well representing the state of decompaction at the specified age.
+        #
+    
+        # Find the stratigraphic unit containing the specified age.
+        # This is the surface unit at the specified age.
+        for surface_unit_index, surface_unit in enumerate(self.stratigraphic_units):
+            # Units are ordered by age (youngest to oldest).
+            #
+            # If current stratigraphic unit is the bottommost unit then *include* the unit's bottom age,
+            # otherwise *exclude* the unit's bottom age. This means we won't needlessly create a partial unit
+            # with zero age range (and zero thickness) unless 'age' happens to be equal to the bottom age of
+            # the bottommost unit. And if 'age' is to equal the bottom age of the bottommost unit then we are
+            # still returning a decompacted well (instead of 'None') despite it having zero thickness - since
+            # it's helpful to return a non-None result at the exact age at which sediment deposition began
+            # (as recorded by the well).
+            bottom_unit_index = len(self.stratigraphic_units) - 1
+            if ((surface_unit_index == bottom_unit_index and age <= surface_unit.bottom_age) or
+                (surface_unit_index < bottom_unit_index and age < surface_unit.bottom_age)):
+
+                # It's possible the surface age of the well is not present day
+                # (which means it's possible that 'age' is not recorded in the well).
+                if age >= surface_unit.top_age:
                     units_to_decompact = self.stratigraphic_units[surface_unit_index:]
                     # If the requested age is in the middle of the current surface unit then
                     # replace the surface unit (to decompact) with a new partial surface unit
@@ -702,48 +845,41 @@ class Well(object):
                         partial_surface_unit = StratigraphicUnit.create_partial_unit(surface_unit, age)
                         units_to_decompact[0] = partial_surface_unit
                     return self._decompact_units(units_to_decompact)
-            
-            # No stratigraphic unit was found that contains 'age'.
-            # In other words, 'age' is older than the well's bottom age (ie, basement age if well contains a base layer).
-            #
-            # Note: It's possible that 'age' is also younger than the surface age of the well if surface age is not
-            #       present day (the surface age is just the top age of the topmost stratigraphic unit).
-            #       If this happens then it means 'age' is at a time after deposition has ended (since a non-zero
-            #       surface age means deposition ended before present day). This is OK though, we still return a
-            #       non-None result because we still have all the sediment layers and hence can decompact
-            #       (although it'll be the same as the fully compacted state of the well).
-            #
-            # So return None to indicate nothing to decompact.
-            return None
-            
-        #
-        # An age was *not* specified, so return a list of decompacted wells where each decompacted well
-        # represents the state of decompaction at the top age of each stratigraphic layer.
-        #
-
-        # Each decompacted well represents decompaction at the age of a stratigraphic unit in the well.
-        decompacted_wells = []
         
-        # Iterate over the stratigraphic units - they are sorted by age (youngest to oldest).
+        # No stratigraphic unit was found that contains 'age'.
         #
-        # Note that the first decompacted well doesn't really need decompaction (it's compacted) but we do it anyway
-        # (it's quick since it only requires one iteration in the decompacted thickness convergence loop).
-        num_stratigraphic_units = len(self.stratigraphic_units)
-        for surface_unit_index in range(0, num_stratigraphic_units):
-            # Decompact from top of surface unit to bottom of well (ie, surface unit and all units beneath it).
-            units_to_decompact = self.stratigraphic_units[surface_unit_index:]
-
-            # For testing StratigraphicUnit.create_partial_unit().
-            # TODO: Remove this code when a proper test is created.
+        # In other words, 'age' is either:
+        # - younger than the well's surface age, or
+        # - older than the well's bottom age (ie, basement age if well contains a base layer).
+        #
+        if age < self.stratigraphic_units[0].top_age:
+            # 'age' is younger than the well's surface age.
             #
-            #for unit_index, unit in enumerate(units_to_decompact):
-            #    partial_unit = StratigraphicUnit.create_partial_unit(unit, unit.top_age)
-            #    units_to_decompact[unit_index] = partial_unit
+            # If this happens then it means 'age' is after deposition has ended (since a non-zero surface age
+            # means deposition ended before present day). So all the sediment layers have been deposited before 'age'.
+            # So we'll keep all the sediment layers and just add a zero-thickness surface layer (ie, no sediment)
+            # on top of the existing surface layer so that we can decompact at 'age'.
+            #
+            # Copy all units and insert a new surface unit of zero thickness with top age matching 'age'.
+            #
+            units_to_decompact = self.stratigraphic_units[:]
+            surface_unit = self.stratigraphic_units[0]
+            units_to_decompact.insert(0, StratigraphicUnit._create_zero_thickness_surface_unit(surface_unit, age))
+        else:
+            # 'age' is older than the well's bottom age.
+            #
+            # If this happens then it means 'age' is before deposition has started.
+            # So none of the sediment layers have been deposited before 'age'.
+            # So we'll ignore all the sediment layers and just have a single zero-thickness surface layer (ie, no sediment)
+            # so that we can decompact at 'age'.
+            #
+            # Only need a single base unit of zero thickness with top age matching 'age'.
+            #
+            units_to_decompact = []
+            base_unit = self.stratigraphic_units[-1]
+            units_to_decompact.append(StratigraphicUnit._create_zero_thickness_base_unit(base_unit, age))
 
-            decompacted_well = self._decompact_units(units_to_decompact)
-            decompacted_wells.append(decompacted_well)
-        
-        return decompacted_wells
+        return self._decompact_units(units_to_decompact)
     
     def _decompact_units(
             self,
