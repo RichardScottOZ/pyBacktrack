@@ -693,22 +693,25 @@ class Well(object):
                 if ((surface_unit_index == bottom_unit_index and age <= surface_unit.bottom_age) or
                     (surface_unit_index < bottom_unit_index and age < surface_unit.bottom_age)):
 
-                    # It's possible the surface age of the well is not present day
-                    # (which means it's possible that 'age' is not recorded in the well).
-                    if age >= surface_unit.top_age:
-                        units_to_decompact = self.stratigraphic_units[surface_unit_index:]
-                        # If the requested age is in the middle of the current surface unit then
-                        # replace the surface unit (to decompact) with a new partial surface unit
-                        # that has top age matching the requested age and top depth adjusted appropriately.
-                        # This essentially equivalent to stripping off part of the top of the surface unit.
-                        if age > surface_unit.top_age:
-                            partial_surface_unit = StratigraphicUnit.create_partial_unit(surface_unit, age)
-                            units_to_decompact[0] = partial_surface_unit
-                        return self._decompact_units(units_to_decompact)
+                    units_to_decompact = self.stratigraphic_units[surface_unit_index:]
+                    # If the requested age is in the middle of the current surface unit then
+                    # replace the surface unit (to decompact) with a new partial surface unit
+                    # that has top age matching the requested age and top depth adjusted appropriately.
+                    # This essentially equivalent to stripping off part of the top of the surface unit.
+                    if age > surface_unit.top_age:
+                        partial_surface_unit = StratigraphicUnit.create_partial_unit(surface_unit, age)
+                        units_to_decompact[0] = partial_surface_unit
+                    return self._decompact_units(units_to_decompact)
             
-            # No stratigraphic unit was found that contains 'age.
-            # In other words, 'age' is either younger than the well's surface age or older than its bottom age
-            # (ie, basement age if well contains a base layer).
+            # No stratigraphic unit was found that contains 'age'.
+            # In other words, 'age' is older than the well's bottom age (ie, basement age if well contains a base layer).
+            #
+            # Note: It's possible that 'age' is also younger than the surface age of the well if surface age is not
+            #       present day (the surface age is just the top age of the topmost stratigraphic unit).
+            #       If this happens then it means 'age' is at a time after deposition has ended (since a non-zero
+            #       surface age means deposition ended before present day). This is OK though, we still return a
+            #       non-None result because we still have all the sediment layers and hence can decompact
+            #       (although it'll be the same as the fully compacted state of the well).
             #
             # So return None to indicate nothing to decompact.
             return None
