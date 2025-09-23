@@ -83,6 +83,7 @@ For example, revisiting our :ref:`backtracking example <pybacktrack_a_backtracki
                              pybacktrack.BACKTRACK_COLUMN_DYNAMIC_TOPOGRAPHY,
                              pybacktrack.BACKTRACK_COLUMN_WATER_DEPTH,
                              pybacktrack.BACKTRACK_COLUMN_TECTONIC_SUBSIDENCE,
+                             pybacktrack.BACKTRACK_COLUMN_SEA_LEVEL,
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LONGITUDE,
                              pybacktrack.BACKTRACK_COLUMN_PALEO_LATITUDE,
                              pybacktrack.BACKTRACK_COLUMN_LITHOLOGY],

@@ -471,6 +471,7 @@ List of column types available for the ``decompacted_columns`` argument of
 - ``pybacktrack.BACKTRACK_COLUMN_DYNAMIC_TOPOGRAPHY``
 - ``pybacktrack.BACKTRACK_COLUMN_TECTONIC_SUBSIDENCE``
 - ``pybacktrack.BACKTRACK_COLUMN_WATER_DEPTH``
+- ``pybacktrack.BACKTRACK_COLUMN_SEA_LEVEL``
 - ``pybacktrack.BACKTRACK_COLUMN_LITHOLOGY``
 
 Backstripping
@@ -496,6 +497,7 @@ List of column types available for the ``decompacted_columns`` argument of
 - ``pybacktrack.BACKSTRIP_COLUMN_AVERAGE_WATER_DEPTH``
 - ``pybacktrack.BACKSTRIP_COLUMN_MIN_WATER_DEPTH``
 - ``pybacktrack.BACKSTRIP_COLUMN_MAX_WATER_DEPTH``
+- ``pybacktrack.BACKSTRIP_COLUMN_SEA_LEVEL``
 - ``pybacktrack.BACKSTRIP_COLUMN_COMPACTED_THICKNESS``
 - ``pybacktrack.BACKSTRIP_COLUMN_LITHOLOGY``
 - ``pybacktrack.BACKSTRIP_COLUMN_COMPACTED_DEPTH``
