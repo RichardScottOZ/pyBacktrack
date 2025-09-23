@@ -134,23 +134,38 @@ class SeaLevel(object):
         Parameters
         ----------
         begin_time : float
-            The begin time (in Ma). Should be larger than *end_time*.
+            The begin time (in Ma). Should be larger than (or equal to) ``end_time``.
         end_time : float
-            The end time (in Ma). Should be smaller than *begin_time*.
+            The end time (in Ma). Should be smaller than (or equal to) ``begin_time``.
         
         Returns
         -------
         float
             Average sea level (in metres).
+
+        Raises
+        ------
+        ValueError
+            If ``end_time`` is larger than ``begin_time``.
         
         Notes
         -----
         The average sea level is obtained by integrating sea level curve over the specified time period and then dividing by time period.
+
+        However, if ``begin_time`` and ``end_time`` are equal then this just returns the interpolated sea level at that time
+        (clamped to the nearest boundary if that time is outside the time range of the sea level model).
+
+        .. versionchanged:: 1.5
+            No longer returns zero when ``begin_time`` equals ``end_time``.
         """
+        
+        if end_time > begin_time:
+            raise ValueError('End time should not be larger than begin time.')
         
         time_interval = begin_time - end_time
         if time_interval == 0.0:
-            return 0.0
+            # Return interpolated sea level at the identical begin/end time.
+            return self.sea_level_function(begin_time)
         
         # Get the times of the points in the sea level curve that are within the time range.
         # Passing these times to scipy.integrate.quad avoids warnings caused by the non-smooth
