@@ -124,7 +124,7 @@ The amended drill site output file:
 .. note:: No extra :ref:`base sediment layer <pybacktrack_base_sediment_layer>` is added from the bottom of the
           drill site (2311 metres) to the total sediment thickness at the drill site (1298.15 metres),
           because the former (bottom of drill site) is already deeper than the latter (total sediment thickness).
-          This happens because the :ref:`default total sediment thickness grid <pybacktrack_base_sediment_layer>` is not
+          This happens because the :ref:`default total sediment thickness grid <pybacktrack_bundled_total_sediment_thickness_grid>` is not
           as accurate near continental margins (compared to deeper ocean basins).
 
 .. _pybacktrack_backstrip_output_decompacted:
@@ -164,7 +164,7 @@ Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`pa
           using the *decompacted_columns* argument of the :func:`pybacktrack.backstrip_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
 
-By default, the rows are associated with the the stratigraphic ages in the input drill site.
+By default, the rows are associated with the stratigraphic ages in the input drill site.
 However, you can specify your own time for each row using the ``-tl`` or ``-tr`` command-line options (run ``python -m pybacktrack.backstrip_cli --help`` for more details)
 or using the *times* argument of the :func:`pybacktrack.backstrip_and_write_well` function.
 And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site

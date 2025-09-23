@@ -164,7 +164,7 @@ Finally, the *paleo_longitude* and *paleo_latitude* columns contain the :ref:`pa
           using the *decompacted_columns* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
           By default, only *age* and *decompacted_thickness* are output.
 
-By default, the rows are associated with the the stratigraphic ages in the input drill site.
+By default, the rows are associated with the stratigraphic ages in the input drill site.
 However, you can specify your own time for each row using the ``-tl`` or ``-tr`` command-line options (run ``python -m pybacktrack.backtrack_cli --help`` for more details)
 or using the *times* argument of the :func:`pybacktrack.backtrack_and_write_well` function.
 And it's OK to specify times that are *outside* the period of sediment deposition recorded in the drill site
@@ -542,7 +542,8 @@ Note that, unlike backstripping, :ref:`dynamic topography <pybacktrack_dynamic_t
 .. figure:: images/geohistory_DSDP-36-327.png
 
 .. note:: There is a base sediment layer below the drill site (from the bottom of drill site to basement depth) since the drill site does not reach basement depth.
-          And for this drill site the base sediment layer is quite thick because the default total sediment thickness grid is not as accurate near continental margins (compared to deeper ocean basins).
+          And for this drill site the base sediment layer is quite thick because the :ref:`default total sediment thickness grid <pybacktrack_bundled_total_sediment_thickness_grid>`
+          is not as accurate near continental margins (compared to deeper ocean basins).
 
 Oceanic subsidence
 ^^^^^^^^^^^^^^^^^^
