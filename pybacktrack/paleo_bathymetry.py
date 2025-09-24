@@ -87,6 +87,7 @@ def reconstruct_backtrack_bathymetry(
         oldest_time=None,
         time_increment=1,
         *,
+        youngest_time=0.0,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -112,6 +113,7 @@ def reconstruct_backtrack_bathymetry(
         oldest_time=None,\
         time_increment=1,\
         *,\
+        youngest_time=0.0,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -138,11 +140,13 @@ def reconstruct_backtrack_bathymetry(
         The point locations to sample bathymetry at present day.
         Note that any samples outside the masked region of the total sediment thickness grid are ignored.
     oldest_time : float, optional
-        The oldest time (in Ma) that output is generated back to (from present day). Value must not be negative.
+        The oldest time (in Ma) that output is generated back to. Value must not be negative.
         If not specified then the oldest of oceanic crustal ages (for those input points on oceanic crust) and rift start ages
         (for those input points on continental crust) is used instead.
-    time_increment: float
-        The time increment (in My) that output is generated (from present day back to oldest time). Value must be positive.
+    time_increment : float
+        The time increment (in My) that output is generated (from youngest to oldest time). Value must be positive.
+    youngest_time : float, default=0.0
+        The youngest time (in Ma) that output is generated from. Value must not be negative. Defaults to present day.
     lithology_filenames : list of string, optional
         One or more text files containing lithologies.
     age_grid_filename : string, optional
@@ -231,7 +235,7 @@ def reconstruct_backtrack_bathymetry(
     Returns
     -------
     paleo_bathymetry : dict mapping each time to a list of 3-tuple (longitude, latitude, bathymetry)
-        The reconstructed paleo bathymetry points from present day to the oldest time (see ``oldest_time``) in increments of ``time_increment``.
+        The reconstructed paleo bathymetry points from ``youngest_time`` to ``oldest_time`` in increments of ``time_increment``.
         Each key in the returned dict is one of those times and each value in the dict is a list of reconstructed paleo bathymetries
         represented as a 3-tuple containing *reconstructed* longitude, *reconstructed* latitude and paleo bathmetry.
     rift_stretching_factors : list of 3-tuple (longitude, latitude, bathymetry)
@@ -242,7 +246,7 @@ def reconstruct_backtrack_bathymetry(
     Raises
     ------
     ValueError
-        If ``oldest_time`` is negative (if specified) or if ``time_increment`` is not positive.
+        If ``youngest_time`` or ``oldest_time`` is negative (if specified), or if ``time_increment`` is not positive.
 
     Notes
     -----
@@ -257,6 +261,7 @@ def reconstruct_backtrack_bathymetry(
         The following changes were made:
 
         - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
+        - Added optional ``youngest_time`` argument.
         - Added optional ``rifting_period`` argument.
         - Added optional ``output_rift_stretching_factors`` argument (and corresponding optional ``rift_stretching_factors`` return value).
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
@@ -280,6 +285,8 @@ def reconstruct_backtrack_bathymetry(
     else:
         num_cpus = 1
     
+    if (youngest_time < 0):
+        raise ValueError("'youngest_time' should not be negative")
     if (oldest_time is not None and
         oldest_time < 0):
         raise ValueError("'oldest_time' should not be negative")
@@ -467,9 +474,9 @@ def reconstruct_backtrack_bathymetry(
             oldest_continental_time = max(continental_grid_sample[7] for continental_grid_sample in continental_grid_samples)
             oldest_time = max(oldest_time, oldest_continental_time)
     
-    # Create times from present day to the oldest requested time in the requested time increments.
-    # Note: Using 1e-6 to ensure the oldest time gets included (if it's an exact multiple of the time increment, which it likely will be).
-    time_range = [float(time) for time in np.arange(0, oldest_time + 1e-6, time_increment)]
+    # Create times from youngest to oldest requested times, in requested time increments.
+    # Note: Using 1e-6 to ensure the oldest time gets included (if the time range is an exact multiple of the time increment, which it likely will be).
+    time_range = [float(time) for time in np.arange(youngest_time, oldest_time + 1e-6, time_increment)]
     
     # Find the sea levels over the requested time period.
     if sea_level_model:
@@ -1336,7 +1343,11 @@ def write_bathymetry_grids(
     .. versionadded:: 1.4
 
     .. versionchanged:: 1.5
-        Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
+        The following changes were made:
+
+        - ``output_file_prefix`` can alternatively be a template string.
+        - Added optional ``output_file_decimal_places_in_time`` argument.
+        - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
 
     # String that formats 'time' to the requested number of decimal places.
@@ -1404,6 +1415,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         oldest_time=None,
         time_increment=1,
         *,
+        youngest_time=0.0,
         lithology_filenames=[pybacktrack.bundle_data.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],
         age_grid_filename=pybacktrack.bundle_data.BUNDLE_AGE_GRID_FILENAME,
         topography_filename=pybacktrack.bundle_data.BUNDLE_TOPOGRAPHY_FILENAME,
@@ -1432,6 +1444,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         oldest_time=None,\
         time_increment=1,\
         *,\
+        youngest_time=0.0,\
         lithology_filenames=[pybacktrack.DEFAULT_BUNDLE_LITHOLOGY_FILENAME],\
         age_grid_filename=pybacktrack.BUNDLE_AGE_GRID_FILENAME,\
         topography_filename=pybacktrack.BUNDLE_TOPOGRAPHY_FILENAME,\
@@ -1471,8 +1484,10 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         The oldest time (in Ma) that output is generated back to (from present day). Value must not be negative.
         If not specified then the oldest of oceanic crustal ages (for those grid points on oceanic crust) and rift start ages
         (for those grid points on continental crust) is used instead.
-    time_increment: float
-        The time increment (in My) that output is generated (from present day back to oldest time). Value must be positive.
+    time_increment : float
+        The time increment (in My) that output is generated (from youngest to oldest time). Value must be positive.
+    youngest_time : float, default=0.0
+        The youngest time (in Ma) that output is generated from. Value must not be negative. Defaults to present day.
     lithology_filenames : list of string, optional
         One or more text files containing lithologies.
     age_grid_filename : string, optional
@@ -1567,7 +1582,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
     Raises
     ------
     ValueError
-        If ``oldest_time`` is negative (if specified) or if ``time_increment`` is not positive.
+        If ``youngest_time`` or ``oldest_time`` is negative (if specified), or if ``time_increment`` is not positive.
 
     Notes
     -----
@@ -1582,7 +1597,10 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         The following changes were made:
 
         - ``oldest_time`` no longer needs to be specified (defaults to oldest of ocean crust ages and continental rift start ages of grid points).
+        - Added optional ``youngest_time`` argument.
         - Added optional ``rifting_period`` argument.
+        - ``output_file_prefix`` can alternatively be a template string.
+        - Added optional ``output_file_decimal_places_in_time`` argument.
         - Added optional ``output_rift_stretching_factor_grid_filename`` argument.
         - Some arguments (after ``*``) are now keyword-**only** (ie, can no longer be specified as positional arguments).
     """
@@ -1598,6 +1616,7 @@ def reconstruct_backtrack_bathymetry_and_write_grids(
         input_points,
         oldest_time,
         time_increment,
+        youngest_time=youngest_time,
         lithology_filenames=lithology_filenames,
         age_grid_filename=age_grid_filename,
         topography_filename=topography_filename,
@@ -1735,6 +1754,10 @@ def main():
     parser = argparse.ArgumentParser(description=__description__, formatter_class=PreserveHelpFormatter)
     
     parser.add_argument('--version', action='version', version=pybacktrack.version.__version__)
+    
+    parser.add_argument('-yt', '--youngest_time', type=parse_non_negative_float, default=0.0,
+            help='The youngest time (in Ma) that paleobathymetry output is generated from. '
+                 'Value must not be negative (and can be non-integral). Defaults to present day.')
     
     parser.add_argument('-i', '--time_increment', type=parse_positive_float, default=1,
             help='The time increment in My. Value must be positive (and can be non-integral). Defaults to 1 My.')
@@ -2017,6 +2040,7 @@ def main():
         grid_spacing_degrees,
         args.oldest_time,
         args.time_increment,
+        youngest_time=args.youngest_time,
         lithology_filenames=args.lithology_filenames,
         age_grid_filename=args.age_grid_filename,
         topography_filename=args.topography_filename,
