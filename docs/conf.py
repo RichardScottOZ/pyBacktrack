@@ -15,26 +15,6 @@
 import sys
 import os
 import re
-from mock import Mock as MagicMock
-
-#
-# Since we haven't (yet) configured "Read the Docs" to install pygplates we
-# need to mock it out to avoid import errors when Sphinx builds documentation.
-#
-# There's also the "autodoc_mock_imports" config variable, but we 'import pybacktrack'
-# in this file (presumably before the config variable is processed) which imports pygplates,
-# so we need to manually mock pygplates instead.
-#
-# See http://docs.readthedocs.io/en/latest/faq.html
-#
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return MagicMock()
-MOCK_MODULES = [
-    'pygplates'
-]
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Read the Docs Sphinx Theme.
 # Note: This needs to be installed with 'pip install sphinx_rtd_theme'.
