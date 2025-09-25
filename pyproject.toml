@@ -48,7 +48,9 @@ optional-dependencies.dev = [
     # Used by supplementary script 'generate_rift_grids.py'.
     # Alternatively can use "PlateTectonicTools" (which is no longer developed, and now contained within "gplately").
     "gplately",
-    "pytest"
+    "pytest",
+    "Sphinx>=1.8",
+    "sphinx-rtd-theme"
 ]
 
 [tool.setuptools]

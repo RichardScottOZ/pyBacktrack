@@ -24,24 +24,13 @@ Backtracking
 
 Find decompacted total sediment thickness and water depth through time.
 
-Summary
-^^^^^^^
-
-:func:`pybacktrack.backtrack_well` finds decompacted total sediment thickness and water depth for each age in a well.
-
-:func:`pybacktrack.write_backtrack_well` writes decompacted parameters as columns in a text file.
-
-:func:`pybacktrack.backtrack_and_write_well` both backtracks well and writes decompacted data.
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.backtrack_well
-
-.. autofunction:: pybacktrack.write_backtrack_well
-
-.. autofunction:: pybacktrack.backtrack_and_write_well
-
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+   
+   pybacktrack.backtrack_well
+   pybacktrack.write_backtrack_well
+   pybacktrack.backtrack_and_write_well
 
 .. _pybacktrack_reference_backstripping:
 
@@ -50,24 +39,13 @@ Backstripping
 
 Find decompacted total sediment thickness and tectonic subsidence through time.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.backstrip_well` finds decompacted total sediment thickness and tectonic subsidence for each age in a well.
-
-:func:`pybacktrack.write_backstrip_well` writes decompacted parameters as columns in a text file.
-
-:func:`pybacktrack.backstrip_and_write_well` both backstrips well and writes decompacted data.
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.backstrip_well
-
-.. autofunction:: pybacktrack.write_backstrip_well
-
-.. autofunction:: pybacktrack.backstrip_and_write_well
-
+   pybacktrack.backstrip_well
+   pybacktrack.write_backstrip_well
+   pybacktrack.backstrip_and_write_well
 
 .. _pybacktrack_reference_paleobathymetry:
 
@@ -76,28 +54,14 @@ Paleobathymetry
 
 Generate paleo bathymetry grids through time.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.generate_lon_lat_points` generates a global grid of points uniformly spaced in longitude and latitude.
-
-:func:`pybacktrack.reconstruct_paleo_bathymetry` reconstructs and backtracks sediment-covered crust through time to get paleo bathymetry.
-
-:func:`pybacktrack.write_paleo_bathymetry_grids` grid paleo bathymetry into NetCDF grids files.
-
-:func:`pybacktrack.reconstruct_paleo_bathymetry_grids` generates a global grid of points, reconstructs/backtracks their bathymetry and writes paleo bathymetry grids.
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.generate_lon_lat_points
-
-.. autofunction:: pybacktrack.reconstruct_paleo_bathymetry
-
-.. autofunction:: pybacktrack.write_paleo_bathymetry_grids
-
-.. autofunction:: pybacktrack.reconstruct_paleo_bathymetry_grids
-
+   pybacktrack.generate_lon_lat_points
+   pybacktrack.reconstruct_paleo_bathymetry
+   pybacktrack.write_paleo_bathymetry_grids
+   pybacktrack.reconstruct_paleo_bathymetry_grids
 
 .. _pybacktrack_reference_creating_lithologies:
 
@@ -106,119 +70,58 @@ Creating lithologies
 
 Create lithologies or read them from file(s).
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:class:`pybacktrack.Lithology` is a class containing data for a lithology.
-
-:func:`pybacktrack.read_lithologies_file` reads lithologies from a text file.
-
-:func:`pybacktrack.read_lithologies_files` reads and merges lithologies from one or more text files.
-
-:func:`pybacktrack.create_lithology` creates a lithology by looking up a name in a dictionary of lithologies.
-
-:func:`pybacktrack.create_lithology_from_components` creates a lithology by combining multiple lithologies using different weights.
-
-Detail
-^^^^^^
-
-.. autoclass:: pybacktrack.Lithology
-   :members:
-   :special-members: __init__
-
-.. autofunction:: pybacktrack.read_lithologies_file
-
-.. autofunction:: pybacktrack.read_lithologies_files
-
-.. autofunction:: pybacktrack.create_lithology
-
-.. autofunction:: pybacktrack.create_lithology_from_components
-
-
-.. _pybacktrack_reference_decompacting_well_sites:
-
-Decompacting well sites
------------------------
-
-* :ref:`Read/write well site files <pybacktrack_reference_read_write_well_sites>`,
-* :ref:`query a well and its stratigraphic layers <pybacktrack_reference_compacted_well>`, and
-* :ref:`query decompacted sections at past times <pybacktrack_reference_decompacted_well>`.
+   pybacktrack.Lithology
+   pybacktrack.read_lithologies_file
+   pybacktrack.read_lithologies_files
+   pybacktrack.create_lithology
+   pybacktrack.create_lithology_from_components
 
 .. _pybacktrack_reference_read_write_well_sites:
 
 Reading and writing well files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 Read/write well site files.
 
-Summary
-"""""""
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.read_well_file` reads a text file with each row representing a stratigraphic unit.
-
-:func:`pybacktrack.write_well_file` writes a text file with each row representing a stratigraphic unit.
-
-:func:`pybacktrack.write_well_metadata` writes well metadata to a text file.
-
-Detail
-""""""
-
-.. autofunction:: pybacktrack.read_well_file
-
-.. autofunction:: pybacktrack.write_well_file
-
-.. autofunction:: pybacktrack.write_well_metadata
+   pybacktrack.read_well_file
+   pybacktrack.write_well_file
+   pybacktrack.write_well_metadata
 
 .. _pybacktrack_reference_compacted_well:
 
 Compacted well
-^^^^^^^^^^^^^^
+--------------
 
 Query a well and its stratigraphic layers.
 
-Summary
-"""""""
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:class:`pybacktrack.Well` is a class containing all stratigraphic units in a well.
-
-:class:`pybacktrack.StratigraphicUnit` is a class containing data for a stratigraphic unit.
-
-Detail
-""""""
-
-.. autoclass:: pybacktrack.Well
-   :members:
-   :special-members: __init__
-
-.. autoclass:: pybacktrack.StratigraphicUnit
-   :members:
-   :special-members: __init__
+   pybacktrack.Well
+   pybacktrack.StratigraphicUnit
 
 .. _pybacktrack_reference_decompacted_well:
 
 Decompacted well
-^^^^^^^^^^^^^^^^
+----------------
 
 Query decompacted sections at past times.
 
-Summary
-"""""""
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:class:`pybacktrack.DecompactedWell` is a class containing the decompacted well data at a specific age.
-
-:class:`pybacktrack.DecompactedStratigraphicUnit` is a class to hold data for a *decompacted* stratigraphic unit.
-
-Detail
-""""""
-
-.. autoclass:: pybacktrack.DecompactedWell
-   :members:
-   :special-members: __init__
-
-.. autoclass:: pybacktrack.DecompactedStratigraphicUnit
-   :members:
-   :special-members: __init__
-
+   pybacktrack.DecompactedWell
+   pybacktrack.DecompactedStratigraphicUnit
 
 .. _pybacktrack_reference_converting_age_to_depth:
 
@@ -227,20 +130,12 @@ Converting oceanic age to depth
 
 Convert ocean basin ages (Ma) to basement depth (metres) using different age/depth models.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.convert_age_to_depth` converts a single ocean basin age to basement depth.
-
-:func:`pybacktrack.convert_age_to_depth_files` converts a sequence of ages (read from an input file) to depths (and writes both ages and depths to an output file).
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.convert_age_to_depth
-
-.. autofunction:: pybacktrack.convert_age_to_depth_files
-
+   pybacktrack.convert_age_to_depth
+   pybacktrack.convert_age_to_depth_files
 
 .. _pybacktrack_reference_rifting:
 
@@ -250,52 +145,26 @@ Continental rifting
 Continental passive margin initial rifting subsidence and subsequent thermal subsidence.
 Rifting is assumed instantaneous in that thermal contraction only happens after rifting has ended.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.estimate_rift_beta` estimates the stretching factor (beta).
-
-:func:`pybacktrack.total_rift_subsidence` calcultaes the total subsidence as syn-rift plus post-rift.
-
-:func:`pybacktrack.syn_rift_subsidence` calculates the initial subsidence due to continental stretching.
-
-:func:`pybacktrack.post_rift_subsidence` calculates the thermal subsidence as a function of time.
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.estimate_rift_beta
-
-.. autofunction:: pybacktrack.total_rift_subsidence
-
-.. autofunction:: pybacktrack.syn_rift_subsidence
-
-.. autofunction:: pybacktrack.post_rift_subsidence
-
+   pybacktrack.estimate_rift_beta
+   pybacktrack.total_rift_subsidence
+   pybacktrack.syn_rift_subsidence
+   pybacktrack.post_rift_subsidence
 
 .. _pybacktrack_reference_dynamic_topography:
 
 Dynamic topography
 ------------------
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:class:`pybacktrack.DynamicTopography` is a class that reconstructs point location(s) and samples (and interpolates) time-dependent dynamic topography *mantle* frame grids.
-
-:class:`pybacktrack.InterpolateDynamicTopography` is a class that just samples and interpolates time-dependent dynamic topography *mantle* frame grid files.
-
-Detail
-^^^^^^
-
-.. autoclass:: pybacktrack.DynamicTopography
-   :members:
-   :special-members: __init__
-
-.. autoclass:: pybacktrack.InterpolateDynamicTopography
-   :members:
-   :special-members: __init__
-
+   pybacktrack.DynamicTopography
+   pybacktrack.InterpolateDynamicTopography
 
 .. _pybacktrack_reference_sea_level:
 
@@ -304,18 +173,11 @@ Average sea level variations
 
 Read a sea level file and compute average sea level variations during time periods.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:class:`pybacktrack.SeaLevel` is a class that calculates integrated sea levels (relative to present day) over a time period.
-
-Detail
-^^^^^^
-
-.. autoclass:: pybacktrack.SeaLevel
-   :members:
-   :special-members: __init__
-
+   pybacktrack.SeaLevel
 
 .. _pybacktrack_reference_converting_stratigraphic_depth_to_age:
 
@@ -324,21 +186,12 @@ Converting stratigraphic depth to age
 
 Convert stratigraphic depths (metres) to age (Ma) using an depth-to-age model.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.convert_stratigraphic_depth_to_age` converts a single stratigraphic depth to an age.
-
-:func:`pybacktrack.convert_stratigraphic_depth_to_age_files` converts a sequence of stratigraphic depths (read from an input file) to ages
-(and writes both ages and depths, and any lithologies in the input file, to an output file).
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.convert_stratigraphic_depth_to_age
-
-.. autofunction:: pybacktrack.convert_stratigraphic_depth_to_age_files
-
+   pybacktrack.convert_stratigraphic_depth_to_age
+   pybacktrack.convert_stratigraphic_depth_to_age_files
 
 .. _pybacktrack_reference_utilities:
 
@@ -347,20 +200,12 @@ Utilities
 
 Interpolate a sequence of linear segments read from a 2-column file at the values read from a 1-column file.
 
-Summary
-^^^^^^^
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
 
-:func:`pybacktrack.read_interpolate_function` reads x and y columns from a curve file and returns a function y(x) that linearly interpolates.
-
-:func:`pybacktrack.interpolate_file` interpolates a curve function at `x` positions, read from input file, and stores both `x` and interpolated `y` values to output file.
-
-Detail
-^^^^^^
-
-.. autofunction:: pybacktrack.read_interpolate_function
-
-.. autofunction:: pybacktrack.interpolate_file
-
+   pybacktrack.read_interpolate_function
+   pybacktrack.interpolate_file
 
 .. _pybacktrack_reference_constants:
 
